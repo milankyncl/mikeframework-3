@@ -17,18 +17,6 @@ class Injector {
 	private $container;
 
 	/**
-	 * Injector constructor.
-	 */
-
-	public function __construct() {
-
-		/**
-		 * Create internal services here
-		 */
-
-	}
-
-	/**
 	 * Create
 	 */
 

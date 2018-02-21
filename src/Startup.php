@@ -4,6 +4,7 @@ namespace Postmix;
 
 use Dotenv\Dotenv;
 use Postmix\Core\Autoloader;
+use Postmix\Database\Adapter;
 
 /**
  * Class Startup
@@ -12,9 +13,19 @@ use Postmix\Core\Autoloader;
 
 class Startup {
 
+	/**
+	 * @var array Configuration
+	 */
+
 	private $configuration;
 
+	/**
+	 * @var string Application directory path
+	 */
+
 	private $appDirectory;
+
+	/** @var Injector */
 
 	private $dependencyInjector;
 
@@ -56,13 +67,21 @@ class Startup {
 
 			if(is_file($this->appDirectory . '/config/' . $file)) {
 
-				$configuration = require $this->appDirectory . '/config/' . $file;
+				$fileInfo = pathinfo($this->appDirectory . '/config/' . $file);
 
-				if(!isset($this->configuration))
-					$this->configuration = $configuration;
-				else
-					$this->configuration = array_merge($this->configuration, $configuration);
+				// Accepts only .php files
+				if(strtolower($fileInfo['extension']) == 'php') {
 
+					$configuration = [
+						strtolower($fileInfo['filename']) => require $this->appDirectory . '/config/' . $file
+					];
+
+					if(!isset($this->configuration))
+						$this->configuration = $configuration;
+					else
+						$this->configuration = array_merge($this->configuration, $configuration);
+
+				}
 			}
 		}
 	}
@@ -75,16 +94,48 @@ class Startup {
 
 	private function createDependencyInjector() {
 
-		$this->dependencyInjector = new Injector();
+		$dependencyInjector = new Injector;
+
+		/**
+		 * Database service
+		 */
+
+		if(isset($this->configuration['database'])) {
+
+			$dependencyInjector->add(function() {
+
+				if(!isset($this->configuration['database']['adapter']))
+					throw new Exception('Database adapter must be specified.');
+
+				if(!is_null(Adapter::ADAPTERS[$this->configuration['database']['adapter']])) {
+
+					$adapterClass = Adapter::ADAPTERS[$this->configuration['database']['adapter']];
+
+					$adapter = new $adapterClass(
+						$this->configuration['database']['connection']['database'],
+						$this->configuration['database']['connection']['host'],
+						$this->configuration['database']['connection']['user'],
+						$this->configuration['database']['connection']['password']
+						);
+
+					return $adapter;
+				}
+
+
+			}, 'database');
+		}
+
+		$this->dependencyInjector = $dependencyInjector;
 	}
 
 	/**
-	 * Load internal services
+	 * Load external services
 	 */
 
 	public function loadServices() {
 
-		// Load services here
+		//
+
 	}
 
 	/**

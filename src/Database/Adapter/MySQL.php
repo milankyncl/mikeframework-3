@@ -10,10 +10,10 @@ class MySQL extends Adapter {
 	/**
 	 * MySQL PDO Adapter constructor.
 	 *
-	 * @param $database
+	 * @param string $database
 	 * @param string $host
 	 * @param string $username
-	 * @param null $password
+	 * @param string $password
 	 */
 
 	public function __construct($database, $host = '127.0.0.1', $username = 'root', $password = null) {
