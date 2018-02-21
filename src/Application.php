@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Postmix\Structure;
+namespace Postmix;
 
 
 class Application {
