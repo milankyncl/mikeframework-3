@@ -16,6 +16,8 @@ class Startup {
 
 	private $appDirectory;
 
+	private $dependencyInjector;
+
 	/**
 	 * Startup constructor.
 	 *
@@ -29,6 +31,10 @@ class Startup {
 		(new Dotenv($appDirectory . '/../'))->load();
 
 		$this->loadConfigurations();
+
+		$this->createDependencyInjector();
+
+		$this->loadServices();
 	}
 
 	/**
@@ -59,6 +65,26 @@ class Startup {
 
 			}
 		}
+	}
+
+	/**
+	 * Create dependency injector
+	 *
+	 *
+	 */
+
+	private function createDependencyInjector() {
+
+		$this->dependencyInjector = new Injector();
+	}
+
+	/**
+	 * Load internal services
+	 */
+
+	public function loadServices() {
+
+		// Load services here
 	}
 
 	/**

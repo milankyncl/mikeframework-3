@@ -18,7 +18,7 @@ class MySQL extends Adapter {
 
 	public function __construct($database, $host = '127.0.0.1', $username = 'root', $password = null) {
 
-		$connection = new PDO('mysql:dbname=' . $database . ';host=' . $host, $username, $password);
+		$connection = new \PDO('mysql:dbname=' . $database . ';host=' . $host, $username, $password);
 
 		$this->connection = $connection;
 
