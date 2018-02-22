@@ -4,7 +4,7 @@ namespace Postmix;
 
 use Dotenv\Dotenv;
 use Postmix\Core\Autoloader;
-use Postmix\Database\Adapter;
+use Postmix\Core\Database\Adapter;
 
 /**
  * Class Startup
@@ -149,6 +149,13 @@ class Startup {
 		$autoloader = new Autoloader();
 
 		return $autoloader;
+	}
+
+	public function createApplication() {
+
+		$application = new Application();
+
+		return $application;
 	}
 
 }

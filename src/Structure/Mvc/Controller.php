@@ -1,6 +1,15 @@
 <?php
 
+namespace Postmix\Structure\Mvc;
 
-class Controller {
+use Postmix\Injector\Service;
+
+/**
+ * Class Controller
+ *
+ * @package Postmix\Structure\Mvc
+ */
+
+class Controller extends Service {
 
 }

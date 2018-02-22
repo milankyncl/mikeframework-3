@@ -1,9 +1,14 @@
 <?php
 
-namespace Postmix\Database\Adapter;
+namespace Postmix\Core\Database\Adapter;
 
-use Postmix\Database\Adapter;
+use Postmix\Core\Database\Adapter;
 
+/**
+ * Class MySQL
+ *
+ * @package Postmix\Core\Database\Adapter
+ */
 
 class MySQL extends Adapter {
 
