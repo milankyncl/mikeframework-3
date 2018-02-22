@@ -25,6 +25,10 @@ class Startup {
 
 	private $appDirectory;
 
+	/** @var string[] Existing modules */
+
+	private $modules;
+
 	/** @var Injector */
 
 	private $dependencyInjector;
@@ -148,6 +152,20 @@ class Startup {
 
 		$autoloader = new Autoloader();
 
+		/**
+		 * Register modules
+		 */
+
+		$this->resolveModules();
+
+		foreach($this->modules as $module) {
+
+			$autoloader->registerNamespaces([
+				$module . '\Controllers' => $this->appDirectory . '/modules/' . $module . 'Module/controllers',
+				$module . '\Library' => $this->appDirectory . '/modules/' . $module . 'Module/library'
+			]);
+		}
+
 		return $autoloader;
 	}
 
@@ -156,6 +174,23 @@ class Startup {
 		$application = new Application();
 
 		return $application;
+	}
+
+	/**
+	 * Resolve existing modules
+	 */
+
+	private function resolveModules() {
+
+		$modulesScan = scandir($this->appDirectory . '/modules/');
+
+		foreach($modulesScan as $scanItem) {
+
+			if(is_dir($this->appDirectory . '/modules/' . $scanItem) && strpos($scanItem, 'Module') != false) {
+
+				$this->modules[] = str_replace('Module', '', $scanItem);
+			}
+		}
 	}
 
 }

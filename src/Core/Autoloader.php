@@ -292,7 +292,7 @@ class Autoloader {
 
 		$namespaces = $this->_namespaces;
 
-		foreach($namespaces as $nsPrefix => $directories) {
+		foreach($namespaces as $nsPrefix => $directory) {
 
 			/**
 			 * The class name must start with the current namespace
@@ -312,34 +312,31 @@ class Autoloader {
 
 			$fileName = str_replace($ns, $ds, $fileName);
 
-			foreach($directories as $directory) {
-
 				/**
 				 * Add a trailing directory separator if the user forgot to do that
 				 */
 
-				$fixedDirectory = rtrim($directory, $ds) . $ds;
+			$fixedDirectory = rtrim($directory, $ds) . $ds;
 
-				$filePath = $fixedDirectory . $fileName . '.php';
+			$filePath = $fixedDirectory . $fileName . '.php';
+
+			/**
+			 * This is probably a good path, let's check if the file exists
+			 */
+
+			if(is_file($filePath)) {
 
 				/**
-				 * This is probably a good path, let's check if the file exists
+				 * Simulate a require
 				 */
 
-				if(is_file($filePath)) {
+				require_once $filePath;
 
-					/**
-					 * Simulate a require
-					 */
+				/**
+				 * Return true mean success
+				 */
 
-					require_once $filePath;
-
-					/**
-					 * Return true mean success
-					 */
-
-					return true;
-				}
+				return true;
 			}
 		}
 
