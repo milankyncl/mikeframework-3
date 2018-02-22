@@ -111,7 +111,7 @@ class Startup {
 
 	private function createDependencyInjector() {
 
-		$dependencyInjector = new Injector;
+		$injector = new Injector;
 
 		/**
 		 * Database service
@@ -119,7 +119,7 @@ class Startup {
 
 		if(isset($this->configuration['database'])) {
 
-			$dependencyInjector->add(function() {
+			$injector->add(function() {
 
 				if(!isset($this->configuration['database']['adapter']))
 					throw new Exception('Database adapter must be specified.');
@@ -138,6 +138,7 @@ class Startup {
 					return $adapter;
 				}
 
+				return null;
 
 			}, 'database');
 		}
@@ -146,7 +147,11 @@ class Startup {
 		 * Request instance
 		 */
 
-		$this->dependencyInjector = $dependencyInjector;
+		/**
+		 * Save dependency injector for later use
+		 */
+
+		$this->injector = $injector;
 	}
 
 	/**

@@ -24,6 +24,17 @@ class Service {
 	}
 
 	/**
+	 * Get dependency injector instance
+	 *
+	 * @return null|Injector
+	 */
+
+	public function getInjector() {
+
+		return isset($this->injector) ? $this->injector : null;
+	}
+
+	/**
 	 * Get dependency from Injector's container
 	 *
 	 * @param $name

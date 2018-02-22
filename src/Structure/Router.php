@@ -3,8 +3,14 @@
 
 namespace Postmix\Structure;
 
+use Postmix\Injector\Service;
 
-class Router {
+/**
+ * Class Router
+ * @package Postmix\Structure
+ */
+
+class Router extends Service {
 
 	protected $module;
 
@@ -40,8 +46,8 @@ class Router {
 
 	public function UrlResolve(){
 
-		if(isset($_GET['url']))
-			$page = '/' . $_GET['url'];
+		if(isset($_GET['_url']))
+			$page = '/' . $_GET['_url'];
 		else
 			$page = '/';
 

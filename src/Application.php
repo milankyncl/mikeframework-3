@@ -3,6 +3,11 @@
 
 namespace Postmix;
 
+/**
+ * Class Application
+ *
+ * @package Postmix
+ */
 
 class Application {
 
@@ -16,25 +21,6 @@ class Application {
 
 	private $dependencyInjector;
 
-	public function handle() {
-
-		$url = isset($_GET['_handle']) ? $_GET['_handle'] : null;
-
-		$explodedUrl = explode(DIRECTORY_SEPARATOR, $url);
-
-		foreach($explodedUrl as $key => $urlPart) {
-
-			//
-		}
-
-		/**
-		 * Default modules
-		 */
-
-		$this->module = 'Web';
-		$this->controller = 'Index';
-		$this->action = 'index';
-	}
 
 	public function setModules($modules) {
 

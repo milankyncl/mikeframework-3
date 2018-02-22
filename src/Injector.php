@@ -27,7 +27,7 @@ class Injector {
 		else
 			$class = $definition;
 
-		if(!is_null($name))
+		if(!is_null($name) && class_exists($name))
 			$name = get_class($class);
 
 		$this->container[$name] = $class;
