@@ -5,6 +5,7 @@ namespace Postmix;
 use Dotenv\Dotenv;
 use Postmix\Core\Autoloader;
 use Postmix\Core\Database\Adapter;
+use Postmix\Core\Debugger;
 
 /**
  * Class Startup
@@ -88,6 +89,18 @@ class Startup {
 				}
 			}
 		}
+
+		/**
+		 * Error Handler
+		 */
+
+		if($this->configuration['system']['debug'] == true) {
+
+			$debugger = new Debugger();
+
+			$debugger->listen();
+		}
+
 	}
 
 	/**

@@ -37,6 +37,7 @@ namespace Postmix\Core;
 
 use Postmix\Info;
 
+
 class Debugger {
 
 	private $listening = false;
@@ -71,7 +72,7 @@ class Debugger {
 
 	public function listen() {
 
-		set_error_handler([$this, 'ErrorHandler']);
+		set_error_handler([$this, 'ErrorHandler'], E_ALL);
 	}
 
 
