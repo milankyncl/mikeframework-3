@@ -142,6 +142,10 @@ class Startup {
 			}, 'database');
 		}
 
+		/**
+		 * Request instance
+		 */
+
 		$this->dependencyInjector = $dependencyInjector;
 	}
 
@@ -185,6 +189,12 @@ class Startup {
 	public function createApplication() {
 
 		$application = new Application();
+
+		$application->setModules($this->modules);
+
+		$application->setDependencyInjector($this->dependencyInjector);
+
+		$application->handle();
 
 		return $application;
 	}
