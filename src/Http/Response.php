@@ -38,4 +38,13 @@ class Response extends Service {
 		return $this->content;
 	}
 
+	/**
+	 * Send headers
+	 */
+
+	public function sendHeaders() {
+
+
+	}
+
 }

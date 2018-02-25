@@ -58,11 +58,21 @@ class Application {
 
 			if($response instanceof Response) {
 
-				$response->send();
+
 
 			} else
 				throw new Exception('Action can return only instance of ' . Response::class . ' class.');
+
+		} else {
+
+			$response = $this->injector->get('response');
 		}
+
+		/**
+		 *
+		 */
+
+		$response->sendHeaders();
 
 	}
 
