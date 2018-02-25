@@ -1,37 +1,4 @@
 <?php
-/**
- * Mike Framework
- * Copyright (c) 2016 http://mikeframework.com
- * -----------------------------------------------------------------
- * Mike (PHP Framework) is an open source framework for PHP language
- * developers based on local files and folders implementation.
- * ------------------------------------------------------------------
- * @author Milan Kyncl <kyncl@kyro.cz>
- * @version Release: 4.0
- * @licence MIT Licence
- * @copyright  2016 (c) KyRo
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
 
 namespace Postmix\Core;
 
@@ -241,7 +208,7 @@ class Debugger {
                     width:97%;
                     margin:auto;
                     color:#555;
-                    font-size:14px;
+                    font-size:13px;
                     font-weight:lighter;
                     margin-bottom:5px;
                 }
@@ -328,11 +295,18 @@ class Debugger {
                 code > span,
                 .active-line > span {
 
+                    padding: 0;
                     display: block;
                     padding-left: 15px;
                 }
             </style>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/9.6.0/styles/monokai.min.css">
+            <script>
+                function codeScroll(id, lineNum) {
+
+                    document.getElementById('file-' + id).scrollTop = 16 * (lineNum - 3);
+                }
+            </script>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/9.6.0/styles/tomorrow-night.min.css">
         </head>
         <body>
             <div class="container">
@@ -352,7 +326,7 @@ class Debugger {
                             <li><a href="#" id="link-database" onclick="tab('database')">Database</a></li>
                             <li><a href="#" id="link-variables" onclick="tab('variables')">Variables</a></li>
                         </ul>
-                        <span class="ver"><?= Info::FRAMEWORK_VERSION ?></span>
+                        <span class="ver">v<?= Info::FRAMEWORK_VERSION ?></span>
                     </div>
                     <div class="tab" id="tab-backtrace" style="display: block;">
                         <div class="fileinfo">
@@ -386,16 +360,7 @@ class Debugger {
                                 </tr>
                             </table>
                         </div>
-                        <script type="text/javascript">
-                            var tabs = [
-                                'variables',
-                                'database',
-                                'backtrace'
-                            ];
-                            var table = document.getElementById('file-0');
-                            var topOffset = 16.75 * <?=($exception->getLine() - 4)?>;
-                            table.scrollTop = topOffset;
-                        </script>
+                        <script>codeScroll(1, <?= $exception->getLine() ?>)</script>
                         <?php
 
                         foreach($exception->getTrace() as $k => $trace_item) {
@@ -437,16 +402,7 @@ class Debugger {
                                     </tr>
                                 </table>
                             </div>
-                            <script type="text/javascript">
-                                var tabs = [
-                                    'variables',
-                                    'database',
-                                    'backtrace'
-                                ];
-                                var table = document.getElementById('file-<?=$k?>');
-                                var topOffset = 16.75 * <?=($trace_item['line'] - 4)?>;
-                                table.scrollTop = topOffset;
-                            </script>
+                            <script>codeScroll(<?= $k ?>, <?= $trace_item['line'] ?>)</script>
                             <?php
                         }
                         ?>
@@ -464,20 +420,29 @@ class Debugger {
                     </div>
                 </div>
                 <div class="footer">
-                    &copy; Milan Kyncl 2018 &copy; <?= Info::FRAMEWORK_VERSION ?>
+                    Milan Kyncl 2018 &copy; Postmix Framework v<?= Info::FRAMEWORK_VERSION ?>
                 </div>
             </div>
 
             <script src="https://cdn.jsdelivr.net/g/jquery@3.1.1,highlight.js@9.6.0(highlight.min.js+languages/css.min.js+languages/javascript.min.js+languages/php.min.js+languages/sql.min.js)"></script>
             <script>hljs.initHighlightingOnLoad();</script>
             <script type="text/javascript">
-                function tab( id ){
+                var tabs = [
+                    'variables',
+                    'database',
+                    'backtrace'
+                ];
+
+                function tab(id) {
+
                     tabs.forEach(function(value, index){
-                        document.getElementById('tab-'+value).style="";
-                        document.getElementById('link-'+value).className='';
+
+                        document.getElementById('tab-' + value).style = '';
+                        document.getElementById('link-' + value).className = '';
                     });
-                    document.getElementById('tab-'+id).style="display: block";
-                    document.getElementById('link-'+id).className='active';
+
+                    document.getElementById('tab-' + id).style = 'display: block';
+                    document.getElementById('link-' + id).className = 'active';
                 }
             </script>
         </body>
