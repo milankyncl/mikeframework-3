@@ -7,6 +7,7 @@ use Postmix\Database\Adapter;
 use Postmix\Core\Autoloader;
 use Postmix\Core\Debugger;
 use Postmix\Http\Request;
+use Postmix\Http\Response;
 use Postmix\Structure\Router;
 
 /**
@@ -156,6 +157,12 @@ class Startup {
 		 */
 
 		$injector->add(Router::class, 'router');
+
+		/**
+		 * Response instance
+		 */
+
+		$injector->add(Response::class, 'response');
 
 		/**
 		 * Save dependency injector for later use

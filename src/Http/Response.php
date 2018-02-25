@@ -12,6 +12,8 @@ use Postmix\Injector\Service;
 
 class Response extends Service {
 
+	private $sent = false;
+
 	/** @var string */
 
 	private $content = null;
@@ -38,13 +40,18 @@ class Response extends Service {
 		return $this->content;
 	}
 
+	public function isSent() {
+
+		return $this->sent;
+	}
+
 	/**
 	 * Send headers
 	 */
 
-	public function sendHeaders() {
+	public function send() {
 
-
+		$this->sent = true;
 	}
 
 }

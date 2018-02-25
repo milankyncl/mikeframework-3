@@ -24,8 +24,10 @@ class Injector {
 
 		if(is_callable($definition))
 			$class = $definition();
+
 		else if(is_object($definition))
 			$class = $definition;
+
 		else
 			$class = new $definition();
 

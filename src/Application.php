@@ -4,6 +4,7 @@
 namespace Postmix;
 
 use Postmix\Http\Response;
+use Postmix\Structure\Mvc\Controller;
 
 /**
  * Class Application
@@ -46,21 +47,26 @@ class Application {
 		$controller = $this->injector->router->getController();
 		$action = $this->injector->router->getAction();
 
-		ob_start();
-
 		$controllerClass = $module . '\\Controllers\\' . $controller . 'Controller';
+
+		/** @var Controller $controller */
 
 		$controller = new $controllerClass();
 
+		$controller->setInjector($this->injector);
+
 		$response = $controller->{$action . 'Action'}();
+
+		/**
+		 * Clean output after controller action execution
+		 */
+
+		if(ob_get_level())
+			ob_end_clean();
 
 		if(!is_null($response)) {
 
-			if($response instanceof Response) {
-
-
-
-			} else
+			if(!$response instanceof Response)
 				throw new Exception('Action can return only instance of ' . Response::class . ' class.');
 
 		} else {
@@ -69,10 +75,11 @@ class Application {
 		}
 
 		/**
-		 *
+		 * Send Http response
 		 */
 
-		$response->sendHeaders();
+		if(!$response->isSent())
+			$response->send();
 
 	}
 
