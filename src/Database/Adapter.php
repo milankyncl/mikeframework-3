@@ -1,9 +1,9 @@
 <?php
 
-namespace Postmix\Core\Database;
+namespace Postmix\Database;
 
 use Postmix\Exception;
-use Postmix\Core\Database\Adapter\MySQL;
+use Postmix\Database\Adapter\MySQL;
 
 /**
  * Class Adapter

@@ -3,9 +3,11 @@
 namespace Postmix;
 
 use Dotenv\Dotenv;
+use Postmix\Database\Adapter;
 use Postmix\Core\Autoloader;
-use Postmix\Core\Database\Adapter;
 use Postmix\Core\Debugger;
+use Postmix\Http\Request;
+use Postmix\Structure\Router;
 
 /**
  * Class Startup
@@ -32,7 +34,7 @@ class Startup {
 
 	/** @var Injector */
 
-	private $dependencyInjector;
+	private $injector;
 
 	/**
 	 * Startup constructor.
@@ -147,6 +149,14 @@ class Startup {
 		 * Request instance
 		 */
 
+		$injector->add(Request::class, 'request');
+
+		/**
+		 * Router instance
+		 */
+
+		$injector->add(Router::class, 'router');
+
 		/**
 		 * Save dependency injector for later use
 		 */
@@ -191,13 +201,13 @@ class Startup {
 		return $autoloader;
 	}
 
-	public function createApplication() {
+	public function getResponse() {
 
 		$application = new Application();
 
 		$application->setModules($this->modules);
 
-		$application->setDependencyInjector($this->dependencyInjector);
+		$application->setInjector($this->injector);
 
 		$application->handle();
 

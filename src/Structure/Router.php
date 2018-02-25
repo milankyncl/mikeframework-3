@@ -12,184 +12,94 @@ use Postmix\Injector\Service;
 
 class Router extends Service {
 
-	protected $module;
+	private $module = 'Web';
 
-	protected $controller;
+	private $controller = 'Index';
 
-	protected $action;
+	private $action = 'index';
 
-	private $modules;
+	private $parameters = [];
 
-	private $defaultModule = 'Web';
-
-	public static $urlMap;
-
-	public static $urlParams = [];
-
-	private static $origUrlParam;
-
-	private static $usedDirs;
+	private $url;
 
 	/**
-	 * UrlResolve
-	 *
-	 * Získání view a zjištění modulu, controlleru, action
-	 *
-	 * Nahrazení pomlčky za větší písmeno
-	 * -----------------------------------------------------
-	 * str_replace('-','',preg_replace_callback('/-[a-z]/',
-	 * function ($matches) {
-	 * return  strtoupper($matches[0]);
-	 * }, lcfirst($folder)));
-	 * -----------------------------------------------------
+	 * Router constructor.
 	 */
 
-	public function UrlResolve(){
+	public function __construct() {
 
-		if(isset($_GET['_url']))
-			$page = '/' . $_GET['_url'];
-		else
-			$page = '/';
+		$this->getUrlParameters();
+	}
 
-		$map = [];
-		foreach(explode('/', $page) as $arg){
-			if($arg != ''){
-				$map[] = str_replace('-','',preg_replace_callback('/-[a-z]/', function ($matches) {
+	/**
+	 * Get URL parameters
+	 */
+
+	private function getUrlParameters() {
+
+		$url = isset($_GET['_url']) ? '/' . $_GET['_url'] : '/';
+
+		foreach(explode('/', $url) as $param) {
+
+			if($param != '') {
+
+				$this->parameters[] = str_replace('-', '', preg_replace_callback('/-[a-z]/', function ($matches) {
+
 					return  strtoupper($matches[0]);
-				}, lcfirst($arg)));
+
+				}, lcfirst($param)));
 			}
 		}
 
-		if(!empty($map)){
+		$this->url = $url;
+	}
 
-		}else{
-			$this->module = $this->defaultModule;
-			if(isset($this->modules[$this->defaultModule]['defaultController'])){
-				$this->controller = $this->modules[$this->defaultModule]['defaultController'];
-			} else {
-				$this->controller = 'index';
-			}
-
-			if(isset($this->modules[$this->defaultModule]['defaultAction'])){
-				$this->action = $this->modules[$this->defaultModule]['defaultAction'];
-			} else {
-				$this->action = 'index';
-			}
-		}
+	public function handle() {
 
 	}
 
 	/**
-	 * Resolve conficts affected by mixing module, controller, action and action arguments
-	 */
-
-	public function UrlResolveConflicts(){
-		$used_dirs = 0;
-		if($this->module != 'web') $used_dirs += 1;
-		if($this->action != 'index') $used_dirs += 1;
-		if($this->controller != 'index') $used_dirs += 1;
-		$params = array();
-		self::$usedDirs = $used_dirs;
-		for($i = $used_dirs; $i < count(self::$urlMap); $i++){
-			$params[] = self::$urlMap[$i];
-		}
-		self::$urlParams = $params;
-	}
-
-
-	/**
-	 * Set application modules
-	 *
-	 * @param Array $modules
-	 */
-
-	public function registerModules( $modules ){
-		$registered = [];
-
-		foreach($modules as $name => $module){
-			$registered[$name] = $module;
-			if(isset($module['defaultModule']) && $module['defaultModule'] == true){
-				$this->defaultModule = $name;
-			}
-		}
-
-		/**
-		 * Set the first one if deafultModel wasn't set
-		 */
-		if(!isset($this->defaultModule)) $this->defaultModule = key($registered);
-
-		$this->modules = $registered;
-	}
-
-	/**
-	 * Returns rewrited URI
+	 * Returns rewriten URI
 	 *
 	 * @return string
 	 */
 
-	public function getRewriteUri(){
-		return str_replace(APP_PATH, '', $_SERVER["REQUEST_URI"]);
+	public function getRewriteUri() {
+
+		return $this->url;
 	}
 
 	/**
+	 * Get route controller
 	 *
-	 */
-
-	private function hasAction($module, $controller, $action){
-		require_once(APP_PATH . '/modules/' . $module . 'Module/controllers/' . $controller . 'Controller.php');
-		$rc = new \ReflectionClass($controller . 'Controller');
-		if($rc->hasMethod($action . 'Action')){
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Check if module, controller, action is equal to router
-	 *
-	 * @param $module
-	 * @param bool $controller
-	 * @param bool $action
-	 *
-	 * @return bool
-	 */
-
-	public function is($module, $controller = false, $action = false){
-		if($module and $controller and $action){
-			if($module == $this->module and $controller == $this->controller and $action == $this->action)
-				return true;
-		} else if($module and $controller){
-			if($module == $this->module and $controller == $this->controller)
-				return true;
-		} else {
-			if($module == $this->module)
-				return true;
-		}
-		return false;
-	}
-
-	/**
 	 * @return string
 	 */
 
-	public function getController(){
+	public function getController() {
+
 		return $this->controller;
 	}
 
 	/**
+	 * Get route action
+	 *
 	 * @return string
 	 */
 
 
-	public function getAction(){
+	public function getAction() {
+
 		return $this->action;
 	}
 
 	/**
+	 * Get route module
+	 *
 	 * @return string
 	 */
 
-	public function getModule(){
+	public function getModule() {
+
 		return $this->module;
 	}
 

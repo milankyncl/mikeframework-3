@@ -3,6 +3,8 @@
 
 namespace Postmix;
 
+use Postmix\Http\Response;
+
 /**
  * Class Application
  *
@@ -11,15 +13,13 @@ namespace Postmix;
 
 class Application {
 
-	private $module;
-
-	private $controller;
-
-	private $action;
+	/** @var string */
 
 	private $content;
 
-	private $dependencyInjector;
+	/** @var Injector */
+
+	private $injector;
 
 
 	public function setModules($modules) {
@@ -31,18 +31,48 @@ class Application {
 	 * @param Injector $injector
 	 */
 
-	public function setDependencyInjector(Injector $injector) {
+	public function setInjector(Injector $injector) {
 
-		$this->dependencyInjector = $injector;
+		$this->injector = $injector;
 	}
 
-	public function getContent() {
+	/**
+	 * Handle request
+	 */
 
-		$controllerClass = $this->module . '\\Controllers\\' . $this->controller . 'Controller';
+	public function handle() {
+
+		$module = $this->injector->router->getModule();
+		$controller = $this->injector->router->getController();
+		$action = $this->injector->router->getAction();
+
+		ob_start();
+
+		$controllerClass = $module . '\\Controllers\\' . $controller . 'Controller';
 
 		$controller = new $controllerClass();
 
-		$response = $controller->{$this->action . 'Action'}();
+		$response = $controller->{$action . 'Action'}();
+
+		if(!is_null($response)) {
+
+			if($response instanceof Response) {
+
+				$response->send();
+
+			} else
+				throw new Exception('Action can return only instance of ' . Response::class . ' class.');
+		}
+
+	}
+
+	/**
+	 * Get application content
+	 *
+	 * @return mixed
+	 */
+
+	public function getContent() {
 
 		return $this->content;
 	}

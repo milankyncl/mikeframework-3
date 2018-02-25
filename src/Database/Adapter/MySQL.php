@@ -1,8 +1,8 @@
 <?php
 
-namespace Postmix\Core\Database\Adapter;
+namespace Postmix\Database\Adapter;
 
-use Postmix\Core\Database\Adapter;
+use Postmix\Database\Adapter;
 
 /**
  * Class MySQL

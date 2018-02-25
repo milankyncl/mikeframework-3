@@ -65,14 +65,20 @@ class Debugger {
 				self::Exception($errstr, $errno, $errfile, $errline, $errno, 1);
 				break;
 		}
-
-
-		return true;
 	}
+
+	public function exceptionHandler(\Exception $e) {
+
+	    self::Exception($e->getMessage(), $e->getCode(), $e->getFile(), $e->getLine(), get_class($e), 0);
+    }
 
 	public function listen() {
 
+		error_reporting(0);
+
 		set_error_handler([$this, 'ErrorHandler'], E_ALL);
+
+		set_exception_handler([$this, 'ExceptionHandler']);
 	}
 
 
@@ -81,7 +87,7 @@ class Debugger {
 	private static $exclude = 0;
 
 
-	protected function Exception( $message, $num = null, $file = null, $line = null, $error_type = 'Exception') {
+	protected function Exception( $message, $num = null, $file = null, $line = null, $error_type = 'Exception', $xx) {
 
 		ob_end_clean();
 
