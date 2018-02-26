@@ -3,6 +3,7 @@
 
 namespace Postmix;
 
+use Postmix\Exception\NotFoundException;
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\Controller;
 use Postmix\Exception\UnexpectedReturnTypeException;
@@ -88,13 +89,16 @@ class Application {
 
 		$controllerClass = $module . '\\Controllers\\' . $controller . 'Controller';
 
-		/** @var Controller $controller */
+		/** @var Controller $controllerObject */
 
-		$controller = new $controllerClass();
+		$controllerObject = new $controllerClass();
 
-		$controller->setInjector($this->injector);
+		$controllerObject->setInjector($this->injector);
 
-		$response = $controller->{$action . 'Action'}();
+		if(!method_exists($controllerObject, $action . 'Action'))
+			throw new NotFoundException('Action `' . $action .'` doesn\'t exist in '. $controller . 'Controller.', 404);
+
+		$response = $controllerObject->{$action . 'Action'}();
 
 		/**
 		 * Check for send response

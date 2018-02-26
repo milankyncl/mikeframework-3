@@ -14,10 +14,6 @@ use Postmix\Injector\Service;
 
 class View extends Service {
 
-	/** @var string */
-
-	private $content;
-
 	/** @var string Views directory path */
 
 	private $viewsDirectory;
@@ -26,9 +22,17 @@ class View extends Service {
 
 	private $layoutDirectory;
 
+	/** @var string Layout name */
+
+	private $layout = 'main';
+
 	/** @var bool */
 
 	private $disabled = false;
+
+	private $view;
+
+	private $variables = [];
 
 	/**
 	 * Clear buffer output
@@ -50,6 +54,33 @@ class View extends Service {
 
 		if(!isset($this->viewsDirectory) || !isset($this->layoutDirectory))
 			throw new Exception('View service\'s `viewsDirectory` and `layoutDirectory` must be set before rendering view.');
+
+		$layoutPath = $this->layoutDirectory . '/' . $this->layout . '.php';
+
+		if(!file_exists($layoutPath))
+			throw new FileNotFoundException('Layout `' . $this->layout .'` doesn\'t exist in `' . $this->layoutDirectory .'` path.');
+
+		$this->view = lcfirst($controller) . '/' . $action;
+
+		ob_start();
+
+		require $layoutPath;
+
+		$content = ob_get_contents();
+
+		ob_end_clean();
+
+		return $content;
+	}
+
+	private function content() {
+
+		$viewPath = $this->viewsDirectory . '/' . $this->view . '.php';
+
+		if(!file_exists($viewPath))
+			throw new FileNotFoundException('View `' . $this->view .'` doesn\'t exist in `' . $this->viewsDirectory .'` path.');
+
+		require $viewPath;
 	}
 
 	/**
@@ -96,14 +127,11 @@ class View extends Service {
 
 		require $file;
 
-		return ob_end_clean();
+		$content = ob_get_contents();
 
-	}
+		ob_end_clean();
 
-	private function content() {
-
-		if(isset($this->viewContent))
-			return $this->viewContent;
+		return $content;
 	}
 
 	/**
@@ -115,6 +143,16 @@ class View extends Service {
 	public function isDisabled() {
 
 		return $this->disabled;
+	}
+
+	public function __set($name, $value) {
+
+		$this->variables[$name] = $value;
+	}
+
+	public function __get($name) {
+
+		return isset($this->variables[$name]) ? $this->variables[$name] : null;
 	}
 
 }

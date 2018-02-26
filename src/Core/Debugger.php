@@ -46,7 +46,7 @@ class Debugger {
 		?>
         <html>
         <head>
-            <title><?= $exception->getMessage() ?></title>
+            <title><?= substr(strrchr(get_class($exception), "\\"), 1) . ' - ' . $exception->getMessage() ?></title>
             <style type="text/css">
 
                 html{
@@ -87,6 +87,7 @@ class Debugger {
                     font-weight: 400;
                     font-size: 16px;
                     color: #ddd;
+                    word-break: break-all;
                 }
 
                 .head h2 {
@@ -323,7 +324,7 @@ class Debugger {
             <div class="container">
                 <div class="head">
                     <h1>
-                        <?= substr(strrchr(get_class($exception), "\\"), 1) ?>
+                        #<?= $exception->getCode() ?> <?= get_class($exception) ?>
                         <small><?= $exception->getMessage() ?></small>
                     </h1>
 
