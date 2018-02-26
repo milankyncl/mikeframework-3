@@ -3,9 +3,8 @@
 
 namespace Postmix\Structure\Mvc;
 
-use Postmix\Exception;
+use Postmix\Exception\FileNotFoundException;
 use Postmix\Injector\Service;
-use Structure\Mvc\View\FileNotFoundException;
 
 /**
  * Class View
@@ -99,6 +98,7 @@ class View extends Service {
 	private function content() {
 
 		if(isset($this->viewContent))
+			return $this->viewContent;
 	}
 
 }

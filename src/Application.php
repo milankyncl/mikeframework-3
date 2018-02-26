@@ -5,6 +5,7 @@ namespace Postmix;
 
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\Controller;
+use Postmix\Exception\UnexpectedReturnTypeException;
 
 /**
  * Class Application
@@ -67,7 +68,7 @@ class Application {
 		if(!is_null($response)) {
 
 			if(!$response instanceof Response)
-				throw new Exception('Action can return only instance of ' . Response::class . ' class.');
+				throw new UnexpectedReturnTypeException('Action can return only instance of ' . Response::class . ' class.');
 
 		} else {
 

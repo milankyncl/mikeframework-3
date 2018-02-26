@@ -4,6 +4,10 @@ namespace Postmix\Core;
 
 use Postmix\Info;
 
+/**
+ * Class Debugger
+ * @package Postmix\Core
+ */
 
 class Debugger {
 
@@ -59,7 +63,7 @@ class Debugger {
 
                 .head{
                     padding:5px 20px;
-                    background: #6e1c59;
+                    background: #4464AD;
                     -webkit-border-radius: 4px;
                     -moz-border-radius: 4px;
                     border-radius: 4px;
@@ -67,9 +71,10 @@ class Debugger {
                     padding-bottom: 15px;
                 }
 
-                .head h1{
+                .head h1 {
+
                     color:white;
-                    font-size:19px;
+                    font-size: 17px;
                     line-height: 25px;
                     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
                     font-weight: 500;
@@ -81,7 +86,7 @@ class Debugger {
                     color: #eee;
                 }
 
-                .head h2{
+                .head h2 {
                     color:#ccc;
                     font-size:14px;
                     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
@@ -95,6 +100,8 @@ class Debugger {
                 }
 
                 .head .header-footer h2{
+
+                    font-size: 12px;
                     padding-top: 20px;
                     text-align: right;
                 }
@@ -311,10 +318,10 @@ class Debugger {
         <body>
             <div class="container">
                 <div class="head">
-                    <h1><?= get_class($exception) . ' - ' . $exception->getMessage() ?></h1>
+                    <h1><?= substr(strrchr(get_class($exception), "\\"), 1) . ' - ' . $exception->getMessage() ?></h1>
 
                     <div class="header-footer">
-                        <a href="http://github.com/milankyncl/postmix-framework">Documentation - Framework</a>
+                        <a href="http://github.com/milankyncl/postmix-framework">Documentation</a>
                         <h2><?= $exception->getFile() . ' (' . $exception->getLine() . ')' ?></h2>
                     </div>
                 </div>

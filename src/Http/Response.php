@@ -40,6 +40,17 @@ class Response extends Service {
 		return $this->content;
 	}
 
+	public function setContentType($type, $encoding) {
+
+
+	}
+
+	/**
+	 * Check if response was already sent, or not
+	 *
+	 * @return bool
+	 */
+
 	public function isSent() {
 
 		return $this->sent;
