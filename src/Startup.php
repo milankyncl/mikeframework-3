@@ -6,6 +6,7 @@ use Dotenv\Dotenv;
 use Postmix\Database\Adapter;
 use Postmix\Core\Autoloader;
 use Postmix\Core\Debugger;
+use Postmix\Exception\NotFoundException;
 use Postmix\Http\Request;
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\View;
@@ -222,6 +223,24 @@ class Startup {
 		$application->setModules($this->modules);
 
 		$application->setInjector($this->injector);
+
+		if(!$this->configuration['system']['debug']) {
+
+			try {
+
+				return $application->handle();
+
+			} catch(NotFoundException $exception) {
+
+				// TODO: Přesměrování na předem nastavenou 404 stránku
+
+			} catch(\Exception $exception) {
+
+				// TODO: Přesměování na unCaughtException stránku
+				// TODO: Zalogování chyby
+			}
+
+		}
 
 		return $application->handle();
 	}
