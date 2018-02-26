@@ -3,6 +3,7 @@
 
 namespace Postmix\Structure\Mvc;
 
+use Postmix\Exception;
 use Postmix\Exception\FileNotFoundException;
 use Postmix\Injector\Service;
 
@@ -25,6 +26,10 @@ class View extends Service {
 
 	private $layoutDirectory;
 
+	/** @var bool */
+
+	private $disabled = false;
+
 	/**
 	 * Clear buffer output
 	 */
@@ -41,10 +46,10 @@ class View extends Service {
 	 * @param $file
 	 */
 
-	public function render() {
+	public function render($controller, $action) {
 
-
-
+		if(!isset($this->viewsDirectory) || !isset($this->layoutDirectory))
+			throw new Exception('View service\'s `viewsDirectory` and `layoutDirectory` must be set before rendering view.');
 	}
 
 	/**
@@ -99,6 +104,17 @@ class View extends Service {
 
 		if(isset($this->viewContent))
 			return $this->viewContent;
+	}
+
+	/**
+	 * Checks if view is disabled or not
+	 *
+	 * @return bool
+	 */
+
+	public function isDisabled() {
+
+		return $this->disabled;
 	}
 
 }

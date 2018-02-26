@@ -8,6 +8,7 @@ use Postmix\Core\Autoloader;
 use Postmix\Core\Debugger;
 use Postmix\Http\Request;
 use Postmix\Http\Response;
+use Postmix\Structure\Mvc\View;
 use Postmix\Structure\Router;
 
 /**
@@ -165,6 +166,12 @@ class Startup {
 		$injector->add(Response::class, 'response');
 
 		/**
+		 * Response instance
+		 */
+
+		$injector->add(View::class, 'view');
+
+		/**
 		 * Save dependency injector for later use
 		 */
 
@@ -210,15 +217,13 @@ class Startup {
 
 	public function getResponse() {
 
-		$application = new Application();
+		$application = new Application($this->appDirectory);
 
 		$application->setModules($this->modules);
 
 		$application->setInjector($this->injector);
 
-		$application->handle();
-
-		return $application;
+		return $application->handle();
 	}
 
 	/**

@@ -43,7 +43,10 @@ class Injector {
 
 	public function get($name) {
 
-		return (isset($this->container[$name])) ? $this->container[$name] : null;
+		if(!isset($this->container[$name]))
+			throw new Exception('Dependency `' . $name . '` doesn\'t exist.');
+
+		return $this->container[$name];
 	}
 
 	/**

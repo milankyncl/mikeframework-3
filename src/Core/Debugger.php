@@ -73,17 +73,20 @@ class Debugger {
 
                 .head h1 {
 
-                    color:white;
-                    font-size: 17px;
+                    color: white;
+                    font-size: 19px;
                     line-height: 25px;
                     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
                     font-weight: 500;
                 }
 
-                .head h1 > small{
-                    font-weight: 200;
-                    font-size: 14px;
-                    color: #eee;
+                .head h1 > small {
+
+                    display: block;
+                    margin-top: 10px;
+                    font-weight: 400;
+                    font-size: 16px;
+                    color: #ddd;
                 }
 
                 .head h2 {
@@ -96,13 +99,14 @@ class Debugger {
                 }
 
                 .head .header-footer{
-                    margin-top: 5px;
+
+                    margin-top: 0;
                 }
 
-                .head .header-footer h2{
+                .head .header-footer h2 {
 
-                    font-size: 12px;
-                    padding-top: 20px;
+                    font-size: 11px;
+                    margin-top: 17px;
                     text-align: right;
                 }
 
@@ -318,10 +322,13 @@ class Debugger {
         <body>
             <div class="container">
                 <div class="head">
-                    <h1><?= substr(strrchr(get_class($exception), "\\"), 1) . ' - ' . $exception->getMessage() ?></h1>
+                    <h1>
+                        <?= substr(strrchr(get_class($exception), "\\"), 1) ?>
+                        <small><?= $exception->getMessage() ?></small>
+                    </h1>
 
                     <div class="header-footer">
-                        <a href="http://github.com/milankyncl/postmix-framework">Documentation</a>
+                        <!--a href="http://github.com/milankyncl/postmix-framework">Documentation</a-->
                         <h2><?= $exception->getFile() . ' (' . $exception->getLine() . ')' ?></h2>
                     </div>
                 </div>
@@ -329,9 +336,9 @@ class Debugger {
                 <div class="debugg-content">
                     <div class="header">
                         <ul class="tabs-nav">
-                            <li><a href="#" id="link-backtrace" class="active" onclick="tab('backtrace')">Backtrace</a></li>
-                            <li><a href="#" id="link-database" onclick="tab('database')">Database</a></li>
-                            <li><a href="#" id="link-variables" onclick="tab('variables')">Variables</a></li>
+                            <li><a href="#" id="link-backtrace" class="active" onclick="tab('backtrace'); return false">Backtrace</a></li>
+                            <li><a href="#" id="link-database" onclick="tab('database'); return false">Database</a></li>
+                            <li><a href="#" id="link-variables" onclick="tab('variables'); return false">Variables</a></li>
                         </ul>
                         <span class="ver">v<?= Info::FRAMEWORK_VERSION ?></span>
                     </div>
@@ -391,9 +398,13 @@ class Debugger {
                                                 $code = '';
 
                                                 while(!feof($f)){
+
                                                     $n++;
+
                                                     echo $n . '<br>';
+
                                                     $line = fgets($f);
+
                                                     if($n == $trace_item['line']) $code .= '<div class="active-line">';
                                                     $code .= htmlspecialchars($line);
                                                     if($n == $trace_item['line']) $code .= '</div>';

@@ -6,6 +6,8 @@ namespace Postmix;
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\Controller;
 use Postmix\Exception\UnexpectedReturnTypeException;
+use Postmix\Structure\Mvc\View;
+use Postmix\Structure\Router;
 
 /**
  * Class Application
@@ -23,6 +25,26 @@ class Application {
 
 	private $injector;
 
+	/** @var string */
+
+	private $appDirectory;
+
+	/**
+	 * Application constructor.
+	 *
+	 * @param $appDirectory
+	 */
+
+	public function __construct($appDirectory) {
+
+		$this->appDirectory = $appDirectory;
+	}
+
+	/**
+	 * Set application modules
+	 *
+	 * @param $modules
+	 */
 
 	public function setModules($modules) {
 
@@ -39,14 +61,30 @@ class Application {
 	}
 
 	/**
-	 * Handle request
+	 * Handle request and return the response
 	 */
 
 	public function handle() {
 
-		$module = $this->injector->router->getModule();
-		$controller = $this->injector->router->getController();
-		$action = $this->injector->router->getAction();
+		/** @var Router $router */
+
+		$router = $this->injector->get('router');
+
+		$module = $router->getModule();
+		$controller = $router->getController();
+		$action = $router->getAction();
+
+		/** @var View $view */
+
+		$view = $this->injector->get('view');
+
+		$view->setViewsDirectory($this->appDirectory . '/modules/' . $module . 'Module/views');
+
+		$view->setLayoutDirectory($this->appDirectory . '/modules/' . $module . 'Module/layouts');
+
+		/**
+		 * Now execute route
+		 */
 
 		$controllerClass = $module . '\\Controllers\\' . $controller . 'Controller';
 
@@ -59,20 +97,28 @@ class Application {
 		$response = $controller->{$action . 'Action'}();
 
 		/**
-		 * Clean output after controller action execution
+		 * Check for send response
+		 *
+		 * @var $response Response|mixed
 		 */
-
-		if(ob_get_level())
-			ob_end_clean();
 
 		if(!is_null($response)) {
 
 			if(!$response instanceof Response)
 				throw new UnexpectedReturnTypeException('Action can return only instance of ' . Response::class . ' class.');
 
-		} else {
-
+		} else
 			$response = $this->injector->get('response');
+
+		/**
+		 * Render template, if view is not disabled
+		 */
+
+		if(!$view->isDisabled()) {
+
+			$view->clear();
+
+			$response->setContent($view->render($controller, $action));
 		}
 
 		/**
@@ -82,17 +128,7 @@ class Application {
 		if(!$response->isSent())
 			$response->send();
 
-	}
-
-	/**
-	 * Get application content
-	 *
-	 * @return mixed
-	 */
-
-	public function getContent() {
-
-		return $this->content;
+		return $response;
 	}
 
 }
