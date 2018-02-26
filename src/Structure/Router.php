@@ -103,4 +103,31 @@ class Router extends Service {
 		return $this->module;
 	}
 
+	/**
+	 * Set module
+	 */
+
+	public function setModule($module) {
+
+		$this->module = $module;
+	}
+
+	/**
+	 * Set controller
+	 */
+
+	public function setController($controller) {
+
+		$this->controller = $controller;
+	}
+
+	/**
+	 * Set action
+	 */
+
+	public function setAction($action) {
+
+		$this->action = $action;
+	}
+
 }

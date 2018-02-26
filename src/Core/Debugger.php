@@ -25,7 +25,7 @@ class Debugger {
 	public function errorHandler($severity, $message, $file, $line) {
 
 	    if(error_reporting() && $severity)
-	        throw new \ErrorException($message, 0, $severity, $file, $line);
+	        throw new \ErrorException($message, 500, $severity, $file, $line);
 	}
 
 	/**
@@ -77,7 +77,12 @@ class Debugger {
                     font-size: 19px;
                     line-height: 25px;
                     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-                    font-weight: 500;
+                    font-weight: 400;
+                }
+
+                .head h1 > strong {
+
+                    color: #efefef;
                 }
 
                 .head h1 > small {
@@ -324,7 +329,8 @@ class Debugger {
             <div class="container">
                 <div class="head">
                     <h1>
-                        #<?= $exception->getCode() ?> <?= get_class($exception) ?>
+                        <?php if($exception->getCode() > 0) : ?><strong>#<?= $exception->getCode() ?></strong><?php endif ?>
+                        <?= get_class($exception) ?>
                         <small><?= $exception->getMessage() ?></small>
                     </h1>
 

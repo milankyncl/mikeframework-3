@@ -110,8 +110,6 @@ class Startup {
 
 	/**
 	 * Create dependency injector
-	 *
-	 *
 	 */
 
 	private function createDependencyInjector() {
@@ -185,7 +183,7 @@ class Startup {
 
 	public function loadServices() {
 
-		//
+		// TODO: Load external services from configuration
 
 	}
 
@@ -234,10 +232,16 @@ class Startup {
 
 				// TODO: Přesměrování na předem nastavenou 404 stránku
 
+				$this->injector->router->setAction('notFoundException');
+				$this->injector->router->setController('Error');
+
 			} catch(\Exception $exception) {
 
-				// TODO: Přesměování na unCaughtException stránku
+				// TODO: Přesměování na předem nastavenou 500 stránku
 				// TODO: Zalogování chyby
+
+				$this->injector->router->setAction('uncaughtException');
+				$this->injector->router->setController('Error');
 			}
 
 		}
