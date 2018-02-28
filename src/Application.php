@@ -68,7 +68,7 @@ class Application {
 		$router = $this->injector->get('router');
 
 		if(!$router->handle())
-			throw new NotFoundException('No route for request found.', 404);
+			throw new NoRouteFoundException('No route for request found.', 404);
 
 
 		/**

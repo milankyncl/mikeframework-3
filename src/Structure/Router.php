@@ -125,15 +125,50 @@ class Router extends Service {
 
 					$this->controller = $this->urlParts[1];
 
+					if(!$this->actionExists($this->module, $this->controller, 'index'))
+						return false;
+
 				} else {
 
-					$this->action = $this->urlParts[1];
+					if($this->actionExists($this->module, $this->defaultController, $this->urlParts[1]))
+						$this->action = $this->urlParts[1];
+
+					else {
+
+						$this->parameters[] = $this->urlParts[1];
+
+						if($this->actionExists($this->module, $this->defaultController, $this->defaultAction))
+							$this->action = $this->defaultAction;
+
+						else
+							return false;
+					}
 				}
 
 			} else if($this->controllerExists($this->defaultModule, $this->urlParts[0])) {
 
 				$this->controller = $this->urlParts[0];
 				$this->action = $this->action = $this->urlParts[1];
+
+			} else {
+
+				$this->parameters[1] = $this->urlParts[1];
+
+				if($this->actionExists($this->defaultModule, $this->defaultController, $this->urlParts[0]))
+					$this->action = $this->urlParts[0];
+
+				else {
+
+					$this->parameters[0] = $this->urlParts[0];
+
+					if($this->actionExists($this->defaultModule, $this->defaultController, $this->defaultAction))
+						$this->action = $this->defaultAction;
+
+					else
+						return false;
+
+				}
+
 			}
 
 		} else if($numberOfParts >= 3) {
