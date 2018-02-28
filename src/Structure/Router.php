@@ -3,6 +3,7 @@
 
 namespace Postmix\Structure;
 
+use Postmix\Exception\NotFoundException;
 use Postmix\Injector\Service;
 
 /**
@@ -94,7 +95,20 @@ class Router extends Service {
 
 			} else {
 
-				$this->action = $this->urlParts[0];
+				if($this->actionExists($this->module, $this->controller, $this->urlParts[0]))
+					$this->action = $this->urlParts[0];
+
+				else {
+
+					$this->parameters[] = $this->urlParts[0];
+
+					if($this->actionExists($this->module, $this->controller, $this->defaultAction))
+						$this->action = $this->defaultAction;
+
+					else
+						return false;
+				}
+
 			}
 
 		} else if($numberOfParts == 2) {
@@ -135,12 +149,27 @@ class Router extends Service {
 				if($this->controllerExists($this->urlParts[0], $this->urlParts[1])) {
 
 					$this->controller = $this->urlParts[1];
-					$this->action = $this->urlParts[2];
+
+					if($this->actionExists($this->module, $this->controller, $this->urlParts[2]))
+						$this->action = $this->urlParts[2];
+
+					else {
+
+						$this->parameters[] = $this->urlParts[2];
+
+						if($this->actionExists($this->module, $this->controller, $this->defaultAction))
+							$this->action = $this->defaultAction;
+
+						else
+							return false;
+
+					}
 
 				} else {
 
 					$this->parameters[] = $this->urlParts[1];
 				}
+
 			} else {
 
 				if($this->controllerExists($this->defaultModule, $this->urlParts[0])) {
@@ -149,11 +178,6 @@ class Router extends Service {
 					$this->action = $this->urlParts[1];
 					$this->parameters[] = $this->urlParts[2];
 
-				} else {
-
-					$this->parameters[] = $this->urlParts[0];
-					$this->parameters[] = $this->urlParts[1];
-					$this->parameters[] = $this->urlParts[2];
 				}
 			}
 
@@ -162,6 +186,8 @@ class Router extends Service {
 				$this->parameters = $this->urlParts[$i];
 			}
 		}
+
+		return $this->actionExists($this->module, $this->controller, $this->action);
 	}
 
 	/**
@@ -251,8 +277,35 @@ class Router extends Service {
 
 	private function controllerExists($moduleName, $controllerName) {
 
-
 		return is_file($this->configuration->system->appDirectory . '/modules/' . ucfirst($moduleName) . 'Module/' . ucfirst($controllerName) . 'Controller.php');
 	}
 
+	/**
+	 * Checks if action exists
+	 *
+	 * @param $moduleName
+	 * @param $controllerName
+	 * @param $actionName
+	 *
+	 * @return bool
+	 */
+
+	private function actionExists($moduleName, $controllerName, $actionName) {
+
+		$controllerNamespace = '\\' . ucfirst($moduleName) . '\\Controllers\\' . ucfirst($controllerName) . 'Controller';
+
+		$controller = new $controllerNamespace();
+
+		if(method_exists($controller, $actionName . 'Action')) {
+
+			$method = new \ReflectionMethod($controller, $actionName . 'Action');
+
+			$parameters = $method->getParameters();
+
+			if(count($this->parameters) <= count($parameters))
+				return true;
+		}
+
+		return false;
+	}
 }
