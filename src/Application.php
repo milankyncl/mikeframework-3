@@ -99,10 +99,11 @@ class Application {
 
 		$controllerObject->setInjector($this->injector);
 
-		if(!method_exists($controllerObject, $action . 'Action'))
-			throw new NotFoundException('Action `' . $action .'` doesn\'t exist in '. $controller . 'Controller.', 404);
+		/**
+		 * Call the action now
+		 */
 
-		$response = $controllerObject->{$action . 'Action'}();
+		$response = call_user_func_array(array($controllerObject, $action . 'Action'), $router->getParameters());
 
 		/**
 		 * Check for send response

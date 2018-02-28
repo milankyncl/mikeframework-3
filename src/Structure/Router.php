@@ -187,7 +187,7 @@ class Router extends Service {
 			}
 		}
 
-		return $this->actionExists($this->module, $this->controller, $this->action);
+		return true;
 	}
 
 	/**
@@ -242,6 +242,15 @@ class Router extends Service {
 	public function setModule($module) {
 
 		$this->module = $module;
+	}
+
+	/**
+	 * Get parameters
+	 */
+
+	public function getParameters() {
+
+		return $this->parameters;
 	}
 
 	/**
@@ -302,8 +311,13 @@ class Router extends Service {
 
 			$parameters = $method->getParameters();
 
-			if(count($this->parameters) <= count($parameters))
+			if(count($this->parameters) <= count($parameters)) {
+
+				for($i = 0; $i < count($parameters) - count($this->parameters); $i++)
+					$this->parameters[] = false;
+
 				return true;
+			}
 		}
 
 		return false;
