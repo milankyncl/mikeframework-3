@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Structure;
+namespace Postmix\Structure;
 
 
 class Configuration extends \ArrayObject {
@@ -31,7 +31,6 @@ class Configuration extends \ArrayObject {
 
 		if(!isset($this->configuration[$name]))
 			return null;
-
 
 		$configuration = $this->configuration[$name];
 

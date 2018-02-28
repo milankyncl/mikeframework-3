@@ -42,7 +42,13 @@ class Service {
 
 	public function __get($name) {
 
-		return $this->injector->get($name);
+		if(isset($this->{$name}))
+			return $this->{$name};
+
+		if($this->injector->has($name))
+			return $this->injector->get($name);
+
+		return null;
 	}
 
 }

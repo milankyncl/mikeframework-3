@@ -67,6 +67,12 @@ class Application {
 
 		$router = $this->injector->get('router');
 
+		$router->handle();
+
+		/**
+		 * Get module, controller and action
+		 */
+
 		$module = $router->getModule();
 		$controller = $router->getController();
 		$action = $router->getAction();

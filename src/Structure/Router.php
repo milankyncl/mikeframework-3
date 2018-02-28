@@ -24,6 +24,8 @@ class Router extends Service {
 
 	private $action;
 
+	private $urlParts = [];
+
 	private $parameters = [];
 
 	private $url;
@@ -34,14 +36,14 @@ class Router extends Service {
 
 	public function __construct() {
 
-		$this->getUrlParameters();
+		$this->getUrlParts();
 	}
 
 	/**
 	 * Get URL parameters
 	 */
 
-	private function getUrlParameters() {
+	private function getUrLParts() {
 
 		$url = isset($_GET['_url']) ? '/' . $_GET['_url'] : '/';
 
@@ -49,7 +51,7 @@ class Router extends Service {
 
 			if($param != '') {
 
-				$this->parameters[] = str_replace('-', '', preg_replace_callback('/-[a-z]/', function ($matches) {
+				$this->urlParts[] = str_replace('-', '', preg_replace_callback('/-[a-z]/', function ($matches) {
 
 					return  strtoupper($matches[0]);
 
@@ -66,17 +68,99 @@ class Router extends Service {
 		 * Zjištění zda existuje module
 		 */
 
-		$numberOfParams = count($this->parameters);
+		$numberOfParts = count($this->urlParts);
 
-		if($numberOfParams == 0) {
+		$this->action = $this->defaultAction;
+		$this->controller = $this->defaultController;
+		$this->module = $this->defaultModule;
 
-			$this->action = $this->defaultAction;
-			$this->controller = $this->defaultController;
-			$this->module = $this->defaultModule;
+		/**
+		 * Now resolve URL parts
+		 */
 
-		} else if($numberOfParams == 1) {
+		if($numberOfParts == 1) {
 
+			/**
+			 * Check if only part is module, controller, or action
+			 */
 
+			if($this->moduleExists($this->urlParts[0])) {
+
+				$this->module = $this->urlParts[0];
+
+			} else if($this->controllerExists($this->defaultModule, $this->urlParts[0])) {
+
+				$this->controller = $this->urlParts[0];
+
+			} else {
+
+				$this->action = $this->urlParts[0];
+			}
+
+		} else if($numberOfParts == 2) {
+
+			/**
+			 * Check if 2 url parts are module-controller, controller - action
+			 */
+
+			if($this->moduleExists($this->urlParts[0])) {
+
+				$this->module = $this->urlParts[0];
+
+				if($this->controllerExists($this->urlParts[0], $this->urlParts[1])) {
+
+					$this->controller = $this->urlParts[1];
+
+				} else {
+
+					$this->action = $this->urlParts[1];
+				}
+
+			} else if($this->controllerExists($this->defaultModule, $this->urlParts[0])) {
+
+				$this->controller = $this->urlParts[0];
+				$this->action = $this->action = $this->urlParts[1];
+			}
+
+		} else if($numberOfParts >= 3) {
+
+			/**
+			 * Check if 3 url parts are module-controller-action, controller-action-param
+			 */
+
+			if($this->moduleExists($this->urlParts[0])) {
+
+				$this->module = $this->urlParts[0];
+
+				if($this->controllerExists($this->urlParts[0], $this->urlParts[1])) {
+
+					$this->controller = $this->urlParts[1];
+					$this->action = $this->urlParts[2];
+
+				} else {
+
+					$this->parameters[] = $this->urlParts[1];
+				}
+			} else {
+
+				if($this->controllerExists($this->defaultModule, $this->urlParts[0])) {
+
+					$this->controller = $this->urlParts[0];
+					$this->action = $this->urlParts[1];
+					$this->parameters[] = $this->urlParts[2];
+
+				} else {
+
+					$this->parameters[] = $this->urlParts[0];
+					$this->parameters[] = $this->urlParts[1];
+					$this->parameters[] = $this->urlParts[2];
+				}
+			}
+
+			for($i = 3; $i < $numberOfParts; $i++) {
+
+				$this->parameters = $this->urlParts[$i];
+			}
 		}
 	}
 
@@ -158,7 +242,17 @@ class Router extends Service {
 
 	private function moduleExists($moduleName) {
 
-		return is_dir($this->configuration->appDirectory . '/modules/' . $moduleName . 'Module');
+		return is_dir($this->configuration->system->appDirectory . '/modules/' . ucfirst($moduleName) . 'Module');
+	}
+
+	/**
+	 * Controller exists in module
+	 */
+
+	private function controllerExists($moduleName, $controllerName) {
+
+
+		return is_file($this->configuration->system->appDirectory . '/modules/' . ucfirst($moduleName) . 'Module/' . ucfirst($controllerName) . 'Controller.php');
 	}
 
 }

@@ -3,6 +3,8 @@
 
 namespace Postmix;
 
+use Postmix\Injector\Service;
+
 /**
  * Class Injector
  * @package Postmix
@@ -46,6 +48,9 @@ class Injector {
 		if(!isset($this->container[$name]))
 			throw new Exception('Dependency `' . $name . '` doesn\'t exist.');
 
+		if($this->container[$name] instanceof Service)
+			$this->container[$name]->setInjector($this);
+
 		return $this->container[$name];
 	}
 
@@ -57,6 +62,11 @@ class Injector {
 
 		if(isset($this->container[$name]))
 			unset($this->container[$name]);
+	}
+
+	public function has($name) {
+
+		return isset($this->container[$name]);
 	}
 
 	/**

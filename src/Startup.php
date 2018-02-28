@@ -11,6 +11,7 @@ use Postmix\Http\Request;
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\View;
 use Postmix\Structure\Router;
+use Postmix\Structure\Configuration;
 
 /**
  * Class Startup
@@ -102,6 +103,11 @@ class Startup {
 			$debugger->listen();
 		}
 
+		/**
+		 *
+		 */
+
+		$this->configuration['system']['appDirectory'] = $this->appDirectory;
 	}
 
 	/**
@@ -111,6 +117,16 @@ class Startup {
 	private function createDependencyInjector() {
 
 		$injector = new Injector;
+
+		/**
+		 * Configuration
+		 */
+
+		$injector->add(function() {
+
+			return new Configuration($this->configuration);
+
+		}, 'configuration');
 
 		/**
 		 * Database service
