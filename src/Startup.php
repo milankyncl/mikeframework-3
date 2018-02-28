@@ -19,15 +19,11 @@ use Postmix\Structure\Router;
 
 class Startup {
 
-	/**
-	 * @var array Configuration
-	 */
+	/** @var array Configuration */
 
 	private $configuration;
 
-	/**
-	 * @var string Application directory path
-	 */
+	/** @var string Application directory path */
 
 	private $appDirectory;
 
@@ -213,6 +209,14 @@ class Startup {
 
 		return $autoloader;
 	}
+
+	/**
+	 * Get response from application after handling request
+	 *
+	 * @return mixed|Response
+	 * @throws Exception\UnexpectedReturnTypeException
+	 * @throws NotFoundException
+	 */
 
 	public function getResponse() {
 

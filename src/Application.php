@@ -18,10 +18,6 @@ use Postmix\Structure\Router;
 
 class Application {
 
-	/** @var string */
-
-	private $content;
-
 	/** @var Injector */
 
 	private $injector;

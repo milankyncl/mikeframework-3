@@ -12,11 +12,17 @@ use Postmix\Injector\Service;
 
 class Router extends Service {
 
-	private $module = 'Web';
+	private $defaultModule = 'Web';
 
-	private $controller = 'Index';
+	private $defaultController = 'Index';
 
-	private $action = 'index';
+	private $defaultAction = 'index';
+
+	private $module;
+
+	private $controller;
+
+	private $action;
 
 	private $parameters = [];
 
@@ -56,6 +62,22 @@ class Router extends Service {
 
 	public function handle() {
 
+		/**
+		 * Zjištění zda existuje module
+		 */
+
+		$numberOfParams = count($this->parameters);
+
+		if($numberOfParams == 0) {
+
+			$this->action = $this->defaultAction;
+			$this->controller = $this->defaultController;
+			$this->module = $this->defaultModule;
+
+		} else if($numberOfParams == 1) {
+
+
+		}
 	}
 
 	/**
@@ -128,6 +150,15 @@ class Router extends Service {
 	public function setAction($action) {
 
 		$this->action = $action;
+	}
+
+	/**
+	 * Module exists
+	 */
+
+	private function moduleExists($moduleName) {
+
+		return is_dir($this->configuration->appDirectory . '/modules/' . $moduleName . 'Module');
 	}
 
 }
