@@ -74,7 +74,7 @@ class Debugger {
                 .head h1 {
 
                     color: white;
-                    font-size: 19px;
+                    font-size: 18px;
                     line-height: 25px;
                     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
                     font-weight: 400;
@@ -88,7 +88,7 @@ class Debugger {
                 .head h1 > small {
 
                     display: block;
-                    margin-top: 10px;
+                    margin-top: 8px;
                     font-weight: 400;
                     font-size: 16px;
                     color: #ddd;

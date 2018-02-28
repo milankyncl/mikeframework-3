@@ -3,7 +3,7 @@
 
 namespace Postmix;
 
-use Postmix\Exception\NotFoundException;
+use Postmix\Exception\NoRouteFoundException;
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\Controller;
 use Postmix\Exception\UnexpectedReturnTypeException;
