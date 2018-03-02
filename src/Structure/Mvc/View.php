@@ -5,6 +5,7 @@ namespace Postmix\Structure\Mvc;
 
 use Postmix\Exception;
 use Postmix\Exception\FileNotFoundException;
+use Postmix\Helper\LinkGenerator;
 use Postmix\Injector\Service;
 
 /**
@@ -155,4 +156,16 @@ class View extends Service {
 		return isset($this->variables[$name]) ? $this->variables[$name] : null;
 	}
 
+	/**
+	 * View functions
+	 */
+
+	private function link($code) {
+
+		/** @var LinkGenerator $linkGenerator */
+
+		$linkGenerator = $this->injector->get('linkGenerator');
+
+		return $linkGenerator->createFromCode($code);
+	}
 }

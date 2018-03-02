@@ -47,8 +47,8 @@ class LinkGenerator extends Service {
 
 			if(count($parts) == 2) {
 
-				$result['module'] = $parts[0];
-				$result['controller'] = $parts[1];
+				$result['controller'] = $parts[0];
+				$result['action'] = $parts[1];
 
 			} else if(count($parts) == 3) {
 
@@ -77,7 +77,7 @@ class LinkGenerator extends Service {
 			$result['controller'] = $this->injector->router->getDefaultController();
 
 		if(!isset($result['module']))
-			$result['controller'] = $this->injector->router->getDefaultModule();
+			$result['module'] = $this->injector->router->getDefaultModule();
 
 		return $result;
 

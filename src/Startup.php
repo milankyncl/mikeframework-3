@@ -179,16 +179,16 @@ class Startup {
 		$injector->add(Response::class, 'response');
 
 		/**
-		 * Response instance
-		 */
-
-		$injector->add(View::class, 'view');
-
-		/**
 		 * Link generator
 		 */
 
 		$injector->add(LinkGenerator::class, 'linkGenerator');
+
+		/**
+		 * Response instance
+		 */
+
+		$injector->add(View::class, 'view');
 
 		/**
 		 * Save dependency injector for later use

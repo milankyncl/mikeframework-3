@@ -386,6 +386,8 @@ class Debugger {
 
                         foreach($exception->getTrace() as $k => $trace_item) {
 
+                            if(isset($trace_item['file'])):
+
                             $k = $k + 2;
 
                             ?>
@@ -413,11 +415,14 @@ class Debugger {
                                                     $line = fgets($f);
 
                                                     if($n == $trace_item['line']) $code .= '<div class="active-line">';
+
                                                     $code .= htmlspecialchars($line);
+
                                                     if($n == $trace_item['line']) $code .= '</div>';
+
                                                 }
 
-                                                echo '</td><td class="code-td"><pre><code class="html php">'.$code.'</code></pre>';
+                                                echo '</td><td class="code-td"><pre><code class="html php">' . $code . '</code></pre>';
 
                                                 fclose($f);
 
@@ -429,6 +434,8 @@ class Debugger {
                             </div>
                             <script>codeScroll(<?= $k ?>, <?= $trace_item['line'] ?>)</script>
                             <?php
+
+                            endif;
                         }
                         ?>
                     </div>

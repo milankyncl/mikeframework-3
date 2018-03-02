@@ -42,7 +42,7 @@ class Link {
 		 */
 
 		if(!Controller::existsWithAction($linkArgs['module'], $linkArgs['controller'], $linkArgs['action']))
-			throw new Exception\NotFoundException('Invalid link array input.');
+			throw new Exception\NotFoundException('Invalid link code for `' . $linkArgs['module'] . '@' . $linkArgs['controller'] .'@' . $linkArgs['action'] . '`');
 
 		/**
 		 * Set values now
@@ -67,6 +67,13 @@ class Link {
 		$this->params = $linkArgs;
 
 	}
+
+	/**
+	 * Magic method for generating links from object
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
 
 	public function __toString() {
 

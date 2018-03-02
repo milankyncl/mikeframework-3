@@ -27,6 +27,9 @@ class Controller extends Service {
 
 		$controllerNamespace = '\\' . ucfirst($module) . '\\Controllers\\' . ucfirst($controller) . 'Controller';
 
+		if(!class_exists($controllerNamespace))
+			return false;
+
 		$controller = new $controllerNamespace();
 
 		if(method_exists($controller, $action . 'Action')) {
@@ -48,17 +51,6 @@ class Controller extends Service {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Magic method for generating link from Object
-	 *
-	 * @return string
-	 */
-
-	public function __toString() {
-
-		return 'x';
 	}
 
 }
