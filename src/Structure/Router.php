@@ -372,4 +372,23 @@ class Router extends Service {
 
 		return false;
 	}
+
+	/**
+	 * Get Defaults
+	 */
+
+	public function getDefaultAction() {
+
+		return $this->defaultAction;
+	}
+
+	public function getDefaultController() {
+
+		return $this->defaultController;
+	}
+
+	public function getDefaultModule() {
+
+		return $this->defaultModule;
+	}
 }
