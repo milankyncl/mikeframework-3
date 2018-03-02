@@ -6,6 +6,7 @@ use Dotenv\Dotenv;
 use Postmix\Database\Adapter;
 use Postmix\Core\Autoloader;
 use Postmix\Core\Debugger;
+use Postmix\Exception\NoRouteFoundException;
 use Postmix\Exception\NotFoundException;
 use Postmix\Http\Request;
 use Postmix\Http\Response;
@@ -248,12 +249,23 @@ class Startup {
 
 				return $application->handle();
 
-			} catch(NotFoundException $exception) {
+			} catch(NoRouteFoundException $exception) {
 
-				// TODO: Přesměrování na předem nastavenou 404 stránku
+				$error_handler = $this->injector->configuration->system->error_handler;
 
 				$this->injector->router->setAction('notFoundException');
 				$this->injector->router->setController('Error');
+
+				if(!is_null($error_handler)) {
+
+					if(strpos($error_handler, '@') != -1) {
+
+						$parts = explode('@', $error_handler);
+
+						$this->injector->router->setModule($parts[0]);
+						$this->injector->router->setController($parts[1]);
+					}
+				}
 
 			} catch(\Exception $exception) {
 
@@ -266,7 +278,23 @@ class Startup {
 
 		}
 
-		return $application->handle();
+		try {
+
+			return $application->handle();
+
+		} catch(\Exception $e) {
+
+			/**
+			 * Určitě zalogovat neodchytitelnou chybu
+			 */
+
+			$response = $this->injector->get('response');
+
+			$response->setCode(500);
+			$response->send();
+
+			return $response;
+		}
 	}
 
 	/**

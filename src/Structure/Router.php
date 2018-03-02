@@ -31,6 +31,8 @@ class Router extends Service {
 
 	private $url;
 
+	private $handledBefore = false;
+
 	/**
 	 * Router constructor.
 	 */
@@ -78,6 +80,8 @@ class Router extends Service {
 		/**
 		 * Now resolve URL parts
 		 */
+
+		$this->handledBefore = true;
 
 		if($numberOfParts == 1) {
 
@@ -223,6 +227,17 @@ class Router extends Service {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if was actual request handled or not
+	 *
+	 * @return bool
+	 */
+
+	public function handledBefore() {
+
+		return $this->handledBefore;
 	}
 
 	/**

@@ -57,6 +57,17 @@ class Response extends Service {
 	}
 
 	/**
+	 * Set response code
+	 *
+	 * @param $code
+	 */
+
+	public function setCode($code) {
+
+		$this->code = $code;
+	}
+
+	/**
 	 * Send headers
 	 */
 
