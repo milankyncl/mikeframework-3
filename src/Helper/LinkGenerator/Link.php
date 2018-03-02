@@ -83,7 +83,9 @@ class Link {
 
 		$router = $injector->get('router');
 
-		return '/' . (($this->module !=  $router->getDefaultModule()) ? $this->module . '/' : '') . (($this->controller != $router->getDefaultController()) ? $this->controller . '/' : '') . (($this->action != $router->getDefaultAction()) ? $this->action : '');
+		$baseUrl = str_replace('public/index.php', '', $_SERVER['PHP_SELF']);
+
+		return $baseUrl . (($this->module !=  $router->getDefaultModule()) ? $this->module . '/' : '') . (($this->controller != $router->getDefaultController()) ? $this->controller . '/' : '') . (($this->action != $router->getDefaultAction()) ? $this->action : '');
 	}
 
 }

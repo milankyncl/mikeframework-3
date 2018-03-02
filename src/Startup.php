@@ -30,6 +30,10 @@ class Startup {
 
 	private $appDirectory;
 
+	/** @var string Public base directory path */
+
+	private $baseDirectory;
+
 	/** @var string[] Existing modules */
 
 	private $modules;
@@ -49,6 +53,8 @@ class Startup {
 		$this->appDirectory = $appDirectory;
 
 		(new Dotenv($appDirectory . '/../'))->load();
+
+		$this->baseDirectory = $appDirectory . '/../';
 
 		$this->loadConfigurations();
 
@@ -110,6 +116,7 @@ class Startup {
 		 */
 
 		$this->configuration['system']['appDirectory'] = $this->appDirectory;
+		$this->configuration['system']['baseDirectory'] = $this->baseDirectory;
 	}
 
 	/**
