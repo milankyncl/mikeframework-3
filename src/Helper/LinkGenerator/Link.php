@@ -3,8 +3,10 @@
 
 namespace Postmix\Helper\LinkGenerator;
 
+use Postmix\Application;
 use Postmix\Exception;
 use Postmix\Structure\Mvc\Controller;
+use Postmix\Structure\Router;
 
 /**
  * Class Link
@@ -48,7 +50,7 @@ class Link {
 
 		$this->module = $linkArgs['module'];
 		$this->controller = $linkArgs['controller'];
-		$this->controller = $linkArgs['action'];
+		$this->action = $linkArgs['action'];
 
 		/**
 		 * Unset from haystack
@@ -64,6 +66,17 @@ class Link {
 
 		$this->params = $linkArgs;
 
+	}
+
+	public function __toString() {
+
+		$injector = Application::getStaticInjector();
+
+		/** @var Router $router */
+
+		$router = $injector->get('router');
+
+		return '/' . (($this->module !=  $router->getDefaultModule()) ? $this->module . '/' : '') . (($this->controller != $router->getDefaultController()) ? $this->controller . '/' : '') . (($this->action != $router->getDefaultAction()) ? $this->action : '');
 	}
 
 }

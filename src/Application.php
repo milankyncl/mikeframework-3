@@ -22,6 +22,10 @@ class Application {
 
 	private $injector;
 
+	/** @var Injector */
+
+	private static $staticInjector;
+
 	/** @var string */
 
 	private $appDirectory;
@@ -55,6 +59,8 @@ class Application {
 	public function setInjector(Injector $injector) {
 
 		$this->injector = $injector;
+
+		self::$staticInjector = $injector;
 	}
 
 	/**
@@ -138,6 +144,15 @@ class Application {
 			$response->send();
 
 		return $response;
+	}
+
+	/**
+	 *
+	 */
+
+	public static function getStaticInjector() {
+
+		return self::$staticInjector;
 	}
 
 }

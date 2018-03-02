@@ -18,6 +18,8 @@ class Injector {
 
 	private $container;
 
+	private static $staticContainer;
+
 	/**
 	 * Create
 	 */
@@ -37,6 +39,8 @@ class Injector {
 			$name = get_class($class);
 
 		$this->container[$name] = $class;
+
+		self::$staticContainer[$name] = $class;
 	}
 
 	/**

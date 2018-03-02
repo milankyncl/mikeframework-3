@@ -8,6 +8,7 @@ use Postmix\Core\Autoloader;
 use Postmix\Core\Debugger;
 use Postmix\Exception\NoRouteFoundException;
 use Postmix\Exception\NotFoundException;
+use Postmix\Helper\LinkGenerator;
 use Postmix\Http\Request;
 use Postmix\Http\Response;
 use Postmix\Structure\Mvc\View;
@@ -184,6 +185,12 @@ class Startup {
 		$injector->add(View::class, 'view');
 
 		/**
+		 * Link generator
+		 */
+
+		$injector->add(LinkGenerator::class, 'linkGenerator');
+
+		/**
 		 * Save dependency injector for later use
 		 */
 
@@ -276,24 +283,27 @@ class Startup {
 				$this->injector->router->setController('Error');
 			}
 
-		}
+			try {
 
-		try {
+				return $application->handle();
+
+			} catch(\Exception $e) {
+
+				/**
+				 * Určitě zalogovat neodchytitelnou chybu
+				 */
+
+				$response = $this->injector->get('response');
+
+				$response->setCode(500);
+				$response->send();
+
+				return $response;
+			}
+
+		} else {
 
 			return $application->handle();
-
-		} catch(\Exception $e) {
-
-			/**
-			 * Určitě zalogovat neodchytitelnou chybu
-			 */
-
-			$response = $this->injector->get('response');
-
-			$response->setCode(500);
-			$response->send();
-
-			return $response;
 		}
 	}
 
