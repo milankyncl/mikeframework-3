@@ -3,6 +3,7 @@
 
 namespace Postmix\Http;
 
+use Postmix\Http\Response\Headers;
 use Postmix\Injector\Service;
 
 /**
@@ -12,11 +13,30 @@ use Postmix\Injector\Service;
 
 class Response extends Service {
 
+	/** @var int Status code */
+
+	private $code = 200;
+
+	/** @var bool  */
+
 	private $sent = false;
 
 	/** @var string */
 
 	private $content = null;
+
+	/** @var Headers */
+
+	private $headers;
+
+	/**
+	 * Response constructor.
+	 */
+
+	public function __construct() {
+
+		$this->headers = new Headers();
+	}
 
 	/**
 	 * Set response content
@@ -40,9 +60,16 @@ class Response extends Service {
 		return $this->content;
 	}
 
-	public function setContentType($type, $encoding) {
+	/**
+	 * Set content type
+	 *
+	 * @param $type
+	 * @param string $encoding
+	 */
 
+	public function setContentType($type, $encoding = 'utf-8') {
 
+		$this->headers->set('Content-Type', $type . '; charset=' . $encoding);
 	}
 
 	/**
@@ -72,6 +99,22 @@ class Response extends Service {
 	 */
 
 	public function send() {
+
+		/**
+		 * Send all headers
+		 */
+
+		$this->headers->send();
+
+		/**
+		 * Set response code
+		 */
+
+		http_response_code($this->code);
+
+		/**
+		 * Set response as sent
+		 */
 
 		$this->sent = true;
 	}

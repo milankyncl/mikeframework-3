@@ -150,6 +150,11 @@ class View extends Service {
 		return $content;
 	}
 
+	public function disable($disabled = true) {
+
+		$this->disabled = $disabled;
+	}
+
 	/**
 	 * Checks if view is disabled or not
 	 *
