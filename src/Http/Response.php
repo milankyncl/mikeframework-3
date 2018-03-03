@@ -4,6 +4,7 @@
 namespace Postmix\Http;
 
 use Postmix\Http\Response\Headers;
+use Postmix\Info;
 use Postmix\Injector\Service;
 
 /**
@@ -103,6 +104,8 @@ class Response extends Service {
 		/**
 		 * Send all headers
 		 */
+
+		$this->headers->set('X-Powered-By', 'Postmix Framework ' . Info::FRAMEWORK_VERSION);
 
 		$this->headers->send();
 
