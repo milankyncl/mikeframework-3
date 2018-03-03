@@ -7,6 +7,8 @@ use Postmix\Exception;
 use Postmix\Exception\FileNotFoundException;
 use Postmix\Helper\LinkGenerator;
 use Postmix\Injector\Service;
+use Postmix\Helper\Html\Tag;
+use UI\Template;
 
 /**
  * Class View
@@ -35,6 +37,15 @@ class View extends Service {
 
 	private $variables = [];
 
+	/** @var Template */
+
+	private $template;
+
+	public function __construct() {
+
+		$this->template = new Template();
+	}
+
 	/**
 	 * Clear buffer output
 	 */
@@ -52,6 +63,10 @@ class View extends Service {
 	 */
 
 	public function render($controller, $action) {
+
+		/**
+		 * View functions
+		 */
 
 		if(!isset($this->viewsDirectory) || !isset($this->layoutDirectory))
 			throw new Exception('View service\'s `viewsDirectory` and `layoutDirectory` must be set before rendering view.');
@@ -146,10 +161,25 @@ class View extends Service {
 		return $this->disabled;
 	}
 
+	/**
+	 * Magic method for setting values
+	 *
+	 * @param $name
+	 * @param $value
+	 */
+
 	public function __set($name, $value) {
 
 		$this->variables[$name] = $value;
 	}
+
+	/**
+	 * Magic method for getting variables
+	 *
+	 * @param $name
+	 *
+	 * @return mixed|null
+	 */
 
 	public function __get($name) {
 
@@ -157,7 +187,9 @@ class View extends Service {
 	}
 
 	/**
-	 * View functions
+	 * --------------------------------
+	 * |        View functions        |
+	 * --------------------------------
 	 */
 
 	private function link($code) {
