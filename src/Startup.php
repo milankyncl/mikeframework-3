@@ -143,12 +143,13 @@ class Startup {
 
 		if(isset($this->configuration['database'])) {
 
-			$injector->add(function() {
 
-				if(!isset($this->configuration['database']['adapter']))
-					throw new Exception('Database adapter must be specified.');
+			if(!isset($this->configuration['database']['adapter']))
+				throw new Exception('Database adapter must be specified.');
 
-				if(!is_null(Adapter::ADAPTERS[$this->configuration['database']['adapter']])) {
+			if(!is_null(Adapter::ADAPTERS[$this->configuration['database']['adapter']])) {
+
+				$injector->add(function() {
 
 					$adapterClass = Adapter::ADAPTERS[$this->configuration['database']['adapter']];
 
@@ -157,14 +158,13 @@ class Startup {
 						$this->configuration['database']['connection']['host'],
 						$this->configuration['database']['connection']['user'],
 						$this->configuration['database']['connection']['password']
-						);
+					);
 
 					return $adapter;
-				}
 
-				return null;
+				}, 'database');
 
-			}, 'database');
+			}
 		}
 
 		/**

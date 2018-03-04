@@ -12,6 +12,8 @@ use Postmix\Database\Adapter\MySQL;
 
 abstract class Adapter {
 
+	/** @var \PDO */
+
 	protected $connection;
 
 	/**
@@ -37,5 +39,6 @@ abstract class Adapter {
 
 		'pdo_mysql' => MySQL::class
 	];
+
 
 }

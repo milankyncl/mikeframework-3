@@ -3,6 +3,7 @@
 namespace Postmix\Database\Adapter;
 
 use Postmix\Database\Adapter;
+use Postmix\Exception;
 
 /**
  * Class MySQL
@@ -11,6 +12,8 @@ use Postmix\Database\Adapter;
  */
 
 class MySQL extends Adapter {
+
+	private $tableColumns = [];
 
 	/**
 	 * MySQL PDO Adapter constructor.
@@ -29,4 +32,52 @@ class MySQL extends Adapter {
 
 	}
 
+	/**
+	 * Insert data into table
+	 *
+	 * @param $table_name string - Table name
+	 * @param $data array - Data array
+	 *
+	 * @return boolean
+	 */
+
+	public function insert($table_name, $data) {
+
+		$statement = '';
+
+		// $this->connection->prepare();
+	}
+
+	public function prepareQuery($table, $statement, $bindings = []) {
+
+		if(!isset($this->tableColumns[$table])) {
+
+			$describeQuery = $this->connection->query('DESCRIBE ' . $table);
+
+			if(!$describeQuery)
+				throw new Exception\UnknownTableException('Unknown database table `' . $table . '`');
+
+			$describeQuery->setFetchMode(\PDO::FETCH_ASSOC);
+
+			$columnsFetch = $describeQuery->fetchAll();
+
+			$columns = [];
+
+			foreach($columnsFetch as $column) {
+
+				if($column['Key'] == 'PRI')
+					$columns['primary'] = $column['Field'];
+				else
+					$columns[] = $column['Field'];
+			}
+
+			$this->tableColumns[$table] = $columns;
+		}
+
+		$columns = $this->tableColumns[$table];
+
+		print_r($columns);
+
+		exit;
+	}
 }
