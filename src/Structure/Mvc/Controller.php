@@ -2,12 +2,15 @@
 
 namespace Postmix\Structure\Mvc;
 
+use Postmix\Database\Adapter\MySQL;
 use Postmix\Injector\Service;
 
 /**
  * Class Controller
  *
  * @package Postmix\Structure\Mvc
+ *
+ * @property MySQL $database
  */
 
 class Controller extends Service {

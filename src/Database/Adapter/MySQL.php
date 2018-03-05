@@ -34,6 +34,8 @@ class MySQL extends Adapter {
 
 	/**
 	 * Insert data into table
+	 * ---------------------
+	 * Create insert statement, prepare query and bind values into
 	 *
 	 * @param $table_name string - Table name
 	 * @param $data array - Data array
@@ -41,14 +43,54 @@ class MySQL extends Adapter {
 	 * @return boolean
 	 */
 
-	public function insert($table_name, $data) {
+	public function insert($table_name, array $data) {
 
-		$statement = '';
+		// Describe table
 
-		// $this->connection->prepare();
+		$this->describeTable($table_name);
+
+		$this->checkInput($table_name, $data);
+
+		// Get query for statement
+
+		$statement = 'INSERT INTO ' . $table_name . ' VALUES(';
+
+		$i = 0;
+
+		foreach($this->tableColumns[$table_name] as $column) {
+
+			$i++;
+
+			$statement .= '?';
+
+			if(count($this->tableColumns[$table_name]) - 1 != $i)
+				$statement .= ',';
+		}
+
+		$statement .= ')';
+
+		print_r($this->prepareQuery($statement, $data));
 	}
 
-	public function prepareQuery($table, $statement, $bindings = []) {
+	private function checkInput($table_name, array $data) {
+
+		foreach($this->tableColumns[$table_name] as $column) {
+
+
+		}
+	}
+
+	/**
+	 * Describe table
+	 * --------------
+	 * Get table columns and check for existing column
+	 *
+	 * @param $table
+	 *
+	 * @throws Exception\UnknownTableException
+	 */
+
+	private function describeTable($table) {
 
 		if(!isset($this->tableColumns[$table])) {
 
@@ -63,21 +105,86 @@ class MySQL extends Adapter {
 
 			$columns = [];
 
+			echo '<pre>';
+
 			foreach($columnsFetch as $column) {
 
-				if($column['Key'] == 'PRI')
-					$columns['primary'] = $column['Field'];
-				else
-					$columns[] = $column['Field'];
+				$columns[$column['Field']] = [
+					'primary' => ($column['Key'] == 'PRI'),
+					'null' => ($column['Null'] == 'YES')
+				];
 			}
+
+			/**
+			 * Get foreign keys
+			 */
+
+			foreach($this->getTableReferences($table) as $foreignKey) {
+
+				// Prepare foreign key
+
+				$foreignKeyExplode = explode('.', $foreignKey['foreign_key']);
+				$foreignColumnName = $foreignKeyExplode[1];
+
+				// Prepare reference
+
+				$referenceExplode = explode('.', $foreignKey['reference']);
+				$referenceTableName = $referenceExplode[0];
+				$referenceColumnName = $referenceExplode[1];
+
+				// Now save info
+
+				$columns[$foreignColumnName]['foreignKeys'][] = [
+					'table' => $referenceTableName,
+					'column' => $referenceColumnName
+				];
+			}
+
+			print_r($columns);
+
+			exit;
 
 			$this->tableColumns[$table] = $columns;
 		}
 
-		$columns = $this->tableColumns[$table];
+	}
 
-		print_r($columns);
+	/**
+	 * Get table foreign keys and their references
+	 *
+	 * @param $table_name
+	 *
+	 * @return array
+	 */
 
-		exit;
+	private function getTableReferences($table_name) {
+
+		/**
+		 * References SQL
+		 */
+
+		$referencesSql = 'SELECT concat(table_name, ".", column_name) as "foreign_key", ';
+		$referencesSql .= 'concat(referenced_table_name, ".", referenced_column_name) as "reference" ';
+		$referencesSql .= 'FROM information_schema.key_column_usage ';
+		$referencesSql .= 'WHERE referenced_table_name IS NOT NULL AND table_name = "' . $table_name . '"';
+
+		/**
+		 * References query
+		 */
+
+		$referencesQuery = $this->connection->query($referencesSql);
+		$referencesQuery->setFetchMode(\PDO::FETCH_ASSOC);
+
+		return $referencesQuery->fetchAll();
+	}
+
+	private function prepareQuery($statement, $bindings = []) {
+
+		$query = $this->connection->prepare($statement);
+
+		foreach($bindings as $key => $value)
+			$query->bindValue($key, $value);
+
+		return $query;
 	}
 }
