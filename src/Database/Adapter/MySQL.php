@@ -32,6 +32,46 @@ class MySQL extends Adapter {
 
 	}
 
+	public function select($table, $conditions, $columns = '*') {
+
+		$this->describeTable($table);
+
+		// Create select query statement
+
+		$statement = 'SELECT ' . $columns . ' FROM `' . $table . '`';
+
+		$whereSet = false;
+		$bindings = [];
+
+		foreach($conditions as $criterium => $condition) {
+
+			if(!in_array($criterium, [ 'order', 'limit' ])) {
+
+				if(!$whereSet) {
+
+					$statement .= ' WHERE';
+					$whereSet = true;
+				}
+
+				$statement .= ' `' . $criterium . '` = :' . $criterium;
+
+				$bindings[':' . $criterium] = $condition;
+			}
+		}
+
+		if(isset($conditions['order'])) {
+
+			// TODO: Order condition
+		}
+
+		if(isset($conditions['limit'])) {
+
+			// TODO: Limit condition
+		}
+
+		print_r($this->prepareQuery($statement, $bindings)->fetchAll(\PDO::FETCH_ASSOC));
+	}
+
 	/**
 	 * Insert data into table
 	 * ---------------------
@@ -71,6 +111,15 @@ class MySQL extends Adapter {
 
 		print_r($this->prepareQuery($statement, $data));
 	}
+
+	/**
+	 * Checking data input
+	 * -------------------
+	 * Check input data for missing or overlapping values
+	 *
+	 * @param $table_name
+	 * @param array $data
+	 */
 
 	private function checkInput($table_name, array $data) {
 
@@ -140,16 +189,14 @@ class MySQL extends Adapter {
 				];
 			}
 
-			print_r($columns);
-
-			exit;
-
 			$this->tableColumns[$table] = $columns;
 		}
 
 	}
 
 	/**
+	 * Get table references
+	 * -------------------
 	 * Get table foreign keys and their references
 	 *
 	 * @param $table_name
@@ -178,12 +225,25 @@ class MySQL extends Adapter {
 		return $referencesQuery->fetchAll();
 	}
 
+	/**
+	 * Prepare query
+	 * ------------
+	 * Prepare query for execution, bind values
+	 *
+	 * @param $statement
+	 * @param array $bindings
+	 *
+	 * @return \PDOStatement
+	 */
+
 	private function prepareQuery($statement, $bindings = []) {
 
 		$query = $this->connection->prepare($statement);
 
 		foreach($bindings as $key => $value)
-			$query->bindValue($key, $value);
+			$query->bindParam($key, $value);
+
+		$query->execute();
 
 		return $query;
 	}
