@@ -116,6 +116,8 @@ class MySQL extends Adapter {
 		 * Prepare data for cre
 		 */
 
+		print_r($data);
+
 		print_r($this->prepareQuery($statement, null, $data));
 	}
 
@@ -152,9 +154,9 @@ class MySQL extends Adapter {
 		foreach($this->tableColumns[$tableName] as $field => $column) {
 
 			if(!isset($data[$field]) && !$column['null'] && !$column['primary'])
-				throw new MissingColumnValueException('Value for `' . $field . '` is missing, column value can\'t be NULL.');
+				throw new MissingColumnValueException('Value for `' . $field . '` column is missing, column value can\'t be NULL.');
 
-			if($column['primary'] || $column['null'])
+			if($column['primary'] || (!isset($data[$field]) && $column['null']))
 				$data[$field] = NULL;
 		}
 
