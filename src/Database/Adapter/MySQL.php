@@ -31,8 +31,89 @@ class MySQL extends Adapter {
 
 		$connection = new \PDO('mysql:dbname=' . $database . ';host=' . $host, $username, $password);
 
+		$connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
 		$this->connection = $connection;
 
+	}
+
+	/**
+	 * Update
+	 * ------
+	 * Update data in table
+	 *
+	 * @param string $tableName
+	 * @param array $data
+	 * @param array $conditions
+	 *
+	 * @return \PDOStatement
+	 * @throws UnknownTableException
+	 */
+
+	public function update($tableName, array $data, array $conditions) {
+
+		try {
+
+			$this->describeTable($tableName);
+
+
+			// Create select query statement
+
+			$whereSet = false;
+
+			$statement = 'UPDATE `' . $tableName . '`';
+
+			$values = [];
+			$i = 1;
+
+			/**
+			 * Data
+			 */
+
+			foreach($data as $field => $value) {
+
+				$statement .= ' SET `' . $field . '` = ?';
+
+				$values[$i] = $value;
+
+				$i++;
+			}
+
+			/**
+			 * Conditions
+			 */
+
+			foreach($conditions as $criterium => $condition) {
+
+				if(!in_array($criterium, [ 'order', 'limit' ])) {
+
+					if(!$whereSet) {
+
+						$statement .= ' WHERE';
+						$whereSet = true;
+					}
+
+					$statement .= ' `' . $criterium . '` = ?';
+
+					$values[$i] = $condition;
+
+					$i++;
+				}
+			}
+
+			/**
+			 * Prepare query and fetch matching records
+			 */
+
+			$query = $this->prepareQuery($statement, $values);
+			$query->execute();
+
+			return $query;
+
+		} catch(\PDOException $e) {
+
+			throw new Exception($e->getMessage());
+		}
 	}
 
 	/**
@@ -40,7 +121,7 @@ class MySQL extends Adapter {
 	 * ------
 	 * Select data from table
 	 *
-	 * @param $table
+	 * @param $tableName
 	 * @param $conditions
 	 * @param string $columns
 	 *
@@ -48,16 +129,18 @@ class MySQL extends Adapter {
 	 * @throws UnknownTableException
 	 */
 
-	public function select($table, $conditions, $columns = '*') {
+	public function select($tableName, array $conditions, $columns = '*') {
 
-		$this->describeTable($table);
+		$this->describeTable($tableName);
 
 		// Create select query statement
 
-		$statement = 'SELECT ' . $columns . ' FROM `' . $table . '`';
+		$statement = 'SELECT ' . $columns . ' FROM `' . $tableName . '`';
 
 		$whereSet = false;
 		$parameters = [];
+
+		$i = 1;
 
 		foreach($conditions as $criterium => $condition) {
 
@@ -69,9 +152,11 @@ class MySQL extends Adapter {
 					$whereSet = true;
 				}
 
-				$statement .= ' `' . $criterium . '` = :' . $criterium;
+				$statement .= ' `' . $criterium . '` = ?';
 
-				$parameters[$criterium] = $condition;
+				$parameters[$i] = $condition;
+
+				$i++;
 			}
 		}
 
@@ -84,7 +169,6 @@ class MySQL extends Adapter {
 
 			// TODO: Limit condition
 		}
-
 		/**
 		 * Prepare query and fetch matching records
 		 */
@@ -118,25 +202,36 @@ class MySQL extends Adapter {
 
 		$statement = 'INSERT INTO `' . $tableName . '` VALUES(';
 
-		$i = 0;
+		$values = [];
+		$i = 1; $c = 0;
 
 		foreach($this->tableColumns[$tableName] as $columnName => $column) {
 
-			$i++;
+			$c++;
 
-			$statement .= ':' . $columnName;
+			if(isset($data[$columnName])) {
 
-			if(count($this->tableColumns[$tableName])  != $i)
+				$values[$i++] = $data[$columnName];
+
+				if($column)
+					$statement .= '?';
+
+			} else {
+
+				$statement .= 'NULL';
+			}
+
+			if(count($this->tableColumns[$tableName]) != $c)
 				$statement .= ',';
 		}
 
 		$statement .= ')';
 
 		/**
-		 * Create query and execute the INSERT statemenet
+		 * Create query and execute the INSERT statement
 		 */
 
-		$this->prepareQuery($statement, null, $data)->execute();
+		$this->prepareQuery($statement, $values)->execute();
 
 		return $this->connection->lastInsertId();
 	}
@@ -153,8 +248,6 @@ class MySQL extends Adapter {
 	 */
 
 	private function checkInput($tableName, array $data) {
-
-		$missing = [];
 
 		/**
 		 * Loop data input, look for missing columns in table columns
@@ -292,27 +385,11 @@ class MySQL extends Adapter {
 	 * @return \PDOStatement
 	 */
 
-	private function prepareQuery($statement, $params = [], $values = []) {
+	private function prepareQuery($statement, $values = []) {
 
 		$query = $this->connection->prepare($statement);
 
 		$query->setFetchMode(\PDO::FETCH_ASSOC);
-
-		/**
-		 * Bind parameters
-		 */
-
-		if(!is_null($params)) {
-
-			foreach($params as $key => $value) {
-
-				if(is_int($key))
-					$query->bindParam($key, $value);
-				else
-					$query->bindParam(':' . $key, $value);
-			}
-
-		}
 
 		/**
 		 * Bind values
