@@ -52,68 +52,61 @@ class MySQL extends Adapter {
 
 	public function update($tableName, array $data, array $conditions) {
 
-		try {
-
-			$this->describeTable($tableName);
+		$this->describeTable($tableName);
 
 
-			// Create select query statement
+		// Create select query statement
 
-			$whereSet = false;
+		$whereSet = false;
 
-			$statement = 'UPDATE `' . $tableName . '`';
+		$statement = 'UPDATE `' . $tableName . '`';
 
-			$values = [];
-			$i = 1;
+		$values = [];
+		$i = 1;
 
-			/**
-			 * Data
-			 */
+		/**
+		 * Data
+		 */
 
-			foreach($data as $field => $value) {
+		foreach($data as $field => $value) {
 
-				$statement .= ' SET `' . $field . '` = ?';
+			$statement .= ' SET `' . $field . '` = ?';
 
-				$values[$i] = $value;
+			$values[$i] = $value;
+
+			$i++;
+		}
+
+		/**
+		 * Conditions
+		 */
+
+		foreach($conditions as $criterium => $condition) {
+
+			if(!in_array($criterium, [ 'order', 'limit' ])) {
+
+				if(!$whereSet) {
+
+					$statement .= ' WHERE';
+					$whereSet = true;
+				}
+
+				$statement .= ' `' . $criterium . '` = ?';
+
+				$values[$i] = $condition;
 
 				$i++;
 			}
-
-			/**
-			 * Conditions
-			 */
-
-			foreach($conditions as $criterium => $condition) {
-
-				if(!in_array($criterium, [ 'order', 'limit' ])) {
-
-					if(!$whereSet) {
-
-						$statement .= ' WHERE';
-						$whereSet = true;
-					}
-
-					$statement .= ' `' . $criterium . '` = ?';
-
-					$values[$i] = $condition;
-
-					$i++;
-				}
-			}
-
-			/**
-			 * Prepare query and fetch matching records
-			 */
-
-			$query = $this->prepareQuery($statement, $values);
-			$query->execute();
-
-			return $query;
-
-		} catch(\PDOException $e) {
-
-			throw new Exception($e->getMessage());
 		}
+
+		/**
+		 * Prepare query and fetch matching records
+		 */
+
+		$query = $this->prepareQuery($statement, $values);
+		$query->execute();
+
+		return $query;
 	}
 
 	/**
@@ -408,5 +401,10 @@ class MySQL extends Adapter {
 		}
 
 		return $query;
+	}
+
+	public function execute($query, $fetchMode = \PDO::FETCH_ASSOC) {
+
+		return $this->connection->query($query, $fetchMode);
 	}
 }
