@@ -35,6 +35,19 @@ class MySQL extends Adapter {
 
 	}
 
+	/**
+	 * Select
+	 * ------
+	 * Select data from table
+	 *
+	 * @param $table
+	 * @param $conditions
+	 * @param string $columns
+	 *
+	 * @return array
+	 * @throws UnknownTableException
+	 */
+
 	public function select($table, $conditions, $columns = '*') {
 
 		$this->describeTable($table);
@@ -72,7 +85,7 @@ class MySQL extends Adapter {
 			// TODO: Limit condition
 		}
 
-		print_r($this->prepareQuery($statement, $parameters)->fetchAll(\PDO::FETCH_ASSOC));
+		return $this->prepareQuery($statement, $parameters)->fetchAll();
 	}
 
 	/**
@@ -83,7 +96,7 @@ class MySQL extends Adapter {
 	 * @param $tableName string - Table name
 	 * @param $data array - Data array
 	 *
-	 * @return boolean
+	 * @return int
 	 */
 
 	public function insert($tableName, array $data) {
@@ -113,12 +126,12 @@ class MySQL extends Adapter {
 		$statement .= ')';
 
 		/**
-		 * Prepare data for cre
+		 * Create query and execute the INSERT statemenet
 		 */
 
-		print_r($data);
+		$this->prepareQuery($statement, null, $data)->execute();
 
-		print_r($this->prepareQuery($statement, null, $data));
+		return $this->connection->lastInsertId();
 	}
 
 	/**
@@ -276,6 +289,8 @@ class MySQL extends Adapter {
 
 		$query = $this->connection->prepare($statement);
 
+		$query->setFetchMode(\PDO::FETCH_ASSOC);
+
 		/**
 		 * Bind parameters
 		 */
@@ -307,12 +322,6 @@ class MySQL extends Adapter {
 			}
 
 		}
-
-		/**
-		 * Execute query now
-		 */
-
-		$query->execute();
 
 		return $query;
 	}
