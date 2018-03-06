@@ -85,7 +85,14 @@ class MySQL extends Adapter {
 			// TODO: Limit condition
 		}
 
-		return $this->prepareQuery($statement, $parameters)->fetchAll();
+		/**
+		 * Prepare query and fetch matching records
+		 */
+
+		$query =  $this->prepareQuery($statement, $parameters);
+		$query->execute();
+
+		return $query->fetchAll();
 	}
 
 	/**
