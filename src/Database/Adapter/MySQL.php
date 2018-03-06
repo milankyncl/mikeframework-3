@@ -4,6 +4,9 @@ namespace Postmix\Database\Adapter;
 
 use Postmix\Database\Adapter;
 use Postmix\Exception;
+use Postmix\Exception\Database\UnknownTableException;
+use Postmix\Exception\Database\MissingColumnValueException;
+use Postmix\Exception\Database\UnknownColumnException;
 
 /**
  * Class MySQL
@@ -41,7 +44,7 @@ class MySQL extends Adapter {
 		$statement = 'SELECT ' . $columns . ' FROM `' . $table . '`';
 
 		$whereSet = false;
-		$bindings = [];
+		$parameters = [];
 
 		foreach($conditions as $criterium => $condition) {
 
@@ -55,7 +58,7 @@ class MySQL extends Adapter {
 
 				$statement .= ' `' . $criterium . '` = :' . $criterium;
 
-				$bindings[':' . $criterium] = $condition;
+				$parameters[$criterium] = $condition;
 			}
 		}
 
@@ -69,7 +72,7 @@ class MySQL extends Adapter {
 			// TODO: Limit condition
 		}
 
-		print_r($this->prepareQuery($statement, $bindings)->fetchAll(\PDO::FETCH_ASSOC));
+		print_r($this->prepareQuery($statement, $parameters)->fetchAll(\PDO::FETCH_ASSOC));
 	}
 
 	/**
@@ -77,39 +80,43 @@ class MySQL extends Adapter {
 	 * ---------------------
 	 * Create insert statement, prepare query and bind values into
 	 *
-	 * @param $table_name string - Table name
+	 * @param $tableName string - Table name
 	 * @param $data array - Data array
 	 *
 	 * @return boolean
 	 */
 
-	public function insert($table_name, array $data) {
+	public function insert($tableName, array $data) {
 
 		// Describe table
 
-		$this->describeTable($table_name);
+		$this->describeTable($tableName);
 
-		$this->checkInput($table_name, $data);
+		$data = $this->checkInput($tableName, $data);
 
 		// Get query for statement
 
-		$statement = 'INSERT INTO ' . $table_name . ' VALUES(';
+		$statement = 'INSERT INTO `' . $tableName . '` VALUES(';
 
 		$i = 0;
 
-		foreach($this->tableColumns[$table_name] as $column) {
+		foreach($this->tableColumns[$tableName] as $columnName => $column) {
 
 			$i++;
 
-			$statement .= '?';
+			$statement .= ':' . $columnName;
 
-			if(count($this->tableColumns[$table_name]) - 1 != $i)
+			if(count($this->tableColumns[$tableName])  != $i)
 				$statement .= ',';
 		}
 
 		$statement .= ')';
 
-		print_r($this->prepareQuery($statement, $data));
+		/**
+		 * Prepare data for cre
+		 */
+
+		print_r($this->prepareQuery($statement, null, $data));
 	}
 
 	/**
@@ -117,16 +124,45 @@ class MySQL extends Adapter {
 	 * -------------------
 	 * Check input data for missing or overlapping values
 	 *
-	 * @param $table_name
+	 * @param string $tableName
 	 * @param array $data
+	 *
+	 * @throws UnknownColumnException
 	 */
 
-	private function checkInput($table_name, array $data) {
+	private function checkInput($tableName, array $data) {
 
-		foreach($this->tableColumns[$table_name] as $column) {
+		$missing = [];
 
+		/**
+		 * Loop data input, look for missing columns in table columns
+		 */
+
+		foreach($data as $dataField => $dataValue) {
+
+			if(!isset($this->tableColumns[$tableName][$dataField]))
+				throw new UnknownColumnException('Column `' . $dataField .'` doesn\'t exist in table `' . $tableName . '`');
 
 		}
+
+		/**
+		 * Loop table structure
+		 */
+
+		foreach($this->tableColumns[$tableName] as $field => $column) {
+
+			if(!isset($data[$field]) && !$column['null'] && !$column['primary'])
+				throw new MissingColumnValueException('Value for `' . $field . '` is missing, column value can\'t be NULL.');
+
+			if($column['primary'] || $column['null'])
+				$data[$field] = NULL;
+		}
+
+		/**
+		 * Return data back
+		 */
+
+		return $data;
 	}
 
 	/**
@@ -136,7 +172,7 @@ class MySQL extends Adapter {
 	 *
 	 * @param $table
 	 *
-	 * @throws Exception\UnknownTableException
+	 * @throws UnknownTableException
 	 */
 
 	private function describeTable($table) {
@@ -146,15 +182,13 @@ class MySQL extends Adapter {
 			$describeQuery = $this->connection->query('DESCRIBE ' . $table);
 
 			if(!$describeQuery)
-				throw new Exception\UnknownTableException('Unknown database table `' . $table . '`');
+				throw new UnknownTableException('Unknown database table `' . $table . '`');
 
 			$describeQuery->setFetchMode(\PDO::FETCH_ASSOC);
 
 			$columnsFetch = $describeQuery->fetchAll();
 
 			$columns = [];
-
-			echo '<pre>';
 
 			foreach($columnsFetch as $column) {
 
@@ -199,12 +233,12 @@ class MySQL extends Adapter {
 	 * -------------------
 	 * Get table foreign keys and their references
 	 *
-	 * @param $table_name
+	 * @param $tableName
 	 *
 	 * @return array
 	 */
 
-	private function getTableReferences($table_name) {
+	private function getTableReferences($tableName) {
 
 		/**
 		 * References SQL
@@ -213,7 +247,7 @@ class MySQL extends Adapter {
 		$referencesSql = 'SELECT concat(table_name, ".", column_name) as "foreign_key", ';
 		$referencesSql .= 'concat(referenced_table_name, ".", referenced_column_name) as "reference" ';
 		$referencesSql .= 'FROM information_schema.key_column_usage ';
-		$referencesSql .= 'WHERE referenced_table_name IS NOT NULL AND table_name = "' . $table_name . '"';
+		$referencesSql .= 'WHERE referenced_table_name IS NOT NULL AND table_name = "' . $tableName . '"';
 
 		/**
 		 * References query
@@ -236,12 +270,45 @@ class MySQL extends Adapter {
 	 * @return \PDOStatement
 	 */
 
-	private function prepareQuery($statement, $bindings = []) {
+	private function prepareQuery($statement, $params = [], $values = []) {
 
 		$query = $this->connection->prepare($statement);
 
-		foreach($bindings as $key => $value)
-			$query->bindParam($key, $value);
+		/**
+		 * Bind parameters
+		 */
+
+		if(!is_null($params)) {
+
+			foreach($params as $key => $value) {
+
+				if(is_int($key))
+					$query->bindParam($key, $value);
+				else
+					$query->bindParam(':' . $key, $value);
+			}
+
+		}
+
+		/**
+		 * Bind values
+		 */
+
+		if(!is_null($values)) {
+
+			foreach($values as $key => $value) {
+
+				if(is_int($key))
+					$query->bindValue($key, $value);
+				else
+					$query->bindValue(':' . $key, $value);
+			}
+
+		}
+
+		/**
+		 * Execute query now
+		 */
 
 		$query->execute();
 

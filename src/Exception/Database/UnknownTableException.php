@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Postmix\Exception;
+namespace Postmix\Exception\Database;
 
 use Postmix\Exception;
 
