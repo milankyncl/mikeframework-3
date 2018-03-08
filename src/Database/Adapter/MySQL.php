@@ -3,7 +3,6 @@
 namespace Postmix\Database\Adapter;
 
 use Postmix\Database\Adapter;
-use Postmix\Exception;
 use Postmix\Exception\Database\UnknownTableException;
 use Postmix\Exception\Database\MissingColumnValueException;
 use Postmix\Exception\Database\UnknownColumnException;
@@ -35,6 +34,62 @@ class MySQL extends Adapter {
 
 		$this->connection = $connection;
 
+	}
+
+	/**
+	 * Delete
+	 * ------
+	 * Delete data in table
+	 *
+	 * @param string $tableName
+	 * @param array $conditions
+	 *
+	 * @return \PDOStatement
+	 * @throws UnknownTableException
+	 */
+
+	public function delete($tableName, array $conditions = []) {
+
+		$this->describeTable($tableName);
+
+		// Create select query statement
+
+		$whereSet = false;
+
+		$statement = 'DELETE FROM `' . $tableName . '`';
+
+		$parameters = [];
+
+		/**
+		 * Conditions
+		 */
+
+		$i = 0;
+
+		foreach($conditions as $criterium => $condition) {
+
+			if(!in_array($criterium, [ 'order', 'limit' ])) {
+
+				if(!$whereSet) {
+
+					$statement .= ' WHERE';
+					$whereSet = true;
+				}
+
+				$statement .= ' `' . $criterium . '` = ?';
+
+				$parameters[++$i] = $condition;
+			}
+		}
+
+		/**
+		 * Prepare query and fetch matching records
+		 */
+
+		$query = $this->prepareQuery($statement, $parameters);
+		$query->execute();
+
+		return $query;
 	}
 
 	/**
