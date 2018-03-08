@@ -5,10 +5,11 @@ namespace Postmix\Structure\Mvc;
 
 
 use Postmix\Application;
-use Postmix\Database\Adapter;
 use Postmix\Database\AdapterInterface;
 
 class Model {
+
+	private static $sourceTableName;
 
 	/**
 	 * Model constructor.
@@ -30,8 +31,6 @@ class Model {
 
 	private function prefillData(array $data) {
 
-		$variables = get_class_vars(get_called_class());
-
 		/**
 		 * Loop input data
 		 */
@@ -42,16 +41,35 @@ class Model {
 			 * Set all fields
 			 */
 
-			if(key_exists($field, $variables))
-				$this->{$field} = $value;
+			$this->{$field} = $value;
 		}
 	}
 
-	public static function fetchAll($conditions) {
+	/**
+	 * Fetch all
+	 *
+	 * @param array $conditions
+	 *
+	 * @return Model[]|null
+	 * @throws \Postmix\Exception
+	 */
+
+	public static function fetchAll($conditions = []) {
 
 		$connection = self::getConnection();
 
-		$connection->
+		$resultSet = [];
+
+		foreach($connection->select(self::getTable(), $conditions) as $item) {
+
+			$modelClass = get_called_class();
+
+			$model = new $modelClass($item);
+
+			$resultSet[] = $model;
+		}
+
+		return $resultSet;
 	}
 
 	/**
@@ -73,6 +91,19 @@ class Model {
 		$connection = $injector->get('database');
 
 		return $connection;
+	}
+
+	/**
+	 * Get table
+	 * --------
+	 * Get source table name for database quering
+	 *
+	 * @return string
+	 */
+
+	private static function getTable() {
+
+		return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
 	}
 
 }
