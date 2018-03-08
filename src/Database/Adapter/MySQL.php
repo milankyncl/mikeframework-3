@@ -105,7 +105,7 @@ class MySQL extends Adapter {
 	 * @throws UnknownTableException
 	 */
 
-	public function update($tableName, array $data, array $conditions) {
+	public function update($tableName, array $data, array $conditions = []) {
 
 		$this->describeTable($tableName);
 
@@ -177,7 +177,7 @@ class MySQL extends Adapter {
 	 * @throws UnknownTableException
 	 */
 
-	public function select($tableName, array $conditions, $columns = '*') {
+	public function select($tableName, array $conditions = [], $columns = '*') {
 
 		$this->describeTable($tableName);
 

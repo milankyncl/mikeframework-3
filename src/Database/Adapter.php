@@ -10,7 +10,7 @@ use Postmix\Database\Adapter\MySQL;
  * @package Postmix\Database
  */
 
-abstract class Adapter {
+abstract class Adapter implements AdapterInterface {
 
 	/** @var \PDO */
 
