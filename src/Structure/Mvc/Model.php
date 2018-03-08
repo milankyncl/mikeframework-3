@@ -12,6 +12,8 @@ class Model {
 
 	private static $sourceTableName;
 
+	private static $connection;
+
 	/**
 	 * Model constructor.
 	 */
@@ -47,7 +49,7 @@ class Model {
 	}
 
 	/**
-	 * Fetch all
+	 * Fetch all records
 	 *
 	 * @param array $conditions
 	 *
@@ -61,7 +63,7 @@ class Model {
 
 		$resultSet = [];
 
-		foreach($connection->select(self::getTable(), $conditions) as $item) {
+		foreach($connection->select(self::getTableName(), $conditions) as $item) {
 
 			$modelClass = get_called_class();
 
@@ -73,23 +75,90 @@ class Model {
 		return $resultSet;
 	}
 
+	/**
+	 * Fetch one record
+	 *
+	 * @param array $conditions
+	 *
+	 * @return bool|Model
+	 * @throws UnexpectedConditionException
+	 * @throws \Postmix\Exception
+	 */
+
 	public static function fetchOne($conditions = []) {
 
 		$connection = self::getConnection();
 
-		$result = false;
+		$result = null;
 
 		if(isset($conditions['limit']))
 			throw new UnexpectedConditionException('`limit` condition can\'t be set when fetching one record.');
 
 		$conditions['limit'] = 1;
 
-		$fetchedData = $connection->select(self::getTable(), $conditions);
+		$fetchedData = $connection->select(self::getTableName(), $conditions);
 
-		if(!empty($fetchedData))
-			$result = $fetchedData[0];
+		if(!empty($fetchedData)) {
+
+			$modelClass = get_called_class();
+
+			$model = new $modelClass($fetchedData[0]);
+
+			$result = $model;
+
+		}
 
 		return $result;
+	}
+
+	public function save() {
+
+		$connection = self::getConnection();
+
+		$columns = $connection->getTableColumns(self::getTableName());
+
+		$values = [];
+		$primary = false;
+
+		foreach($columns as $field => $column) {
+
+			if($column['primary'] != true) {
+
+				if(isset($this->{$field}) && !is_null($this->{$field})) {
+
+					$values[$field] = $this->{$field};
+
+				} else {
+
+					$values[$field] = NULL;
+				}
+
+			} else {
+
+				$primary = $field;
+			}
+		}
+
+		if($primary != false && isset($this->{$primary})) {
+
+			/**
+			 * Update existing record
+			 */
+
+			$connection->update(self::getTableName(), $values, [
+				$primary => $this->{$primary}
+			]);
+
+		} else {
+
+			/**
+			 * Create new if primary field doesn't exist
+			 */
+
+			$connection->insert(self::getTableName(), $values);
+		}
+
+		return true;
 	}
 
 	/**
@@ -104,24 +173,28 @@ class Model {
 
 	private static function getConnection() {
 
-		$injector = Application::getStaticInjector();
+		if(!isset(self::$connection)) {
 
-		/** @var AdapterInterface $connection */
+			$injector = Application::getStaticInjector();
 
-		$connection = $injector->get('database');
+			/** @var AdapterInterface $connection */
 
-		return $connection;
+			self::$connection = $injector->get('database');
+
+		}
+
+		return self::$connection;
 	}
 
 	/**
-	 * Get table
-	 * --------
+	 * Get table name
+	 * --------------
 	 * Get source table name for database quering
 	 *
 	 * @return string
 	 */
 
-	private static function getTable() {
+	private static function getTableName() {
 
 		return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
 	}

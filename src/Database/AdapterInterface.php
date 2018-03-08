@@ -17,4 +17,6 @@ interface AdapterInterface {
 
 	public function delete($tableName, array $conditions = []);
 
+	public function getTableColumns($tableName);
+
 }

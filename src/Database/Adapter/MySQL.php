@@ -393,6 +393,30 @@ class MySQL extends Adapter {
 	}
 
 	/**
+	 * Get table columns
+	 * -----------------
+	 *
+	 * Get described table columns
+	 *
+	 * @param $tableName
+	 *
+	 * @return bool|mixed
+	 */
+
+	public function getTableColumns($tableName) {
+
+		// TODO: Resolve situtation logic
+		// Is this really indeed?
+		// Tables should be described when fetching datas, or reaching them before, but whatever
+		$this->describeTable($tableName);
+
+		if(isset($this->tableColumns[$tableName]))
+			return $this->tableColumns[$tableName];
+
+		return false;
+	}
+
+	/**
 	 * Get table references
 	 * -------------------
 	 * Get table foreign keys and their references
