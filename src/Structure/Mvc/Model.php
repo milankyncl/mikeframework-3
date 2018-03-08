@@ -6,6 +6,7 @@ namespace Postmix\Structure\Mvc;
 
 use Postmix\Application;
 use Postmix\Database\AdapterInterface;
+use Postmix\Exception\Model\UnexpectedConditionException;
 
 class Model {
 
@@ -70,6 +71,25 @@ class Model {
 		}
 
 		return $resultSet;
+	}
+
+	public static function fetchOne($conditions = []) {
+
+		$connection = self::getConnection();
+
+		$result = false;
+
+		if(isset($conditions['limit']))
+			throw new UnexpectedConditionException('`limit` condition can\'t be set when fetching one record.');
+
+		$conditions['limit'] = 1;
+
+		$fetchedData = $connection->select(self::getTable(), $conditions);
+
+		if(!empty($fetchedData))
+			$result = $fetchedData[0];
+
+		return $result;
 	}
 
 	/**

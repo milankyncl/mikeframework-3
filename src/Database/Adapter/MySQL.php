@@ -210,13 +210,14 @@ class MySQL extends Adapter {
 
 		if(isset($conditions['order'])) {
 
-			// TODO: Order condition
+			$statement .= ' ORDER BY ' . $conditions['order'];
 		}
 
 		if(isset($conditions['limit'])) {
 
-			// TODO: Limit condition
+			$statement .= ' LIMIT ' . $conditions['limit'];
 		}
+
 		/**
 		 * Prepare query and fetch matching records
 		 */
