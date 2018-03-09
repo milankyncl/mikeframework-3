@@ -6,6 +6,7 @@ namespace Postmix\Structure\Mvc;
 
 use Postmix\Application;
 use Postmix\Database\AdapterInterface;
+use Postmix\Database\QueryBuilder;
 use Postmix\Exception\Database\MissingColumnException;
 use Postmix\Exception\Database\MissingPrimaryKeyException;
 use Postmix\Exception\Model\UnexpectedConditionException;
@@ -112,9 +113,11 @@ class Model {
 
 		$connection = self::getConnection();
 
-		$result = false;
+		/**
+		 * Create query builder
+		 */
 
-		$query = '';
+		$builder = new QueryBuilder($conditions);
 
 		if(isset($conditions[0])) {
 
@@ -123,9 +126,9 @@ class Model {
 			 */
 
 			if(isset($conditions['deleted']) && $conditions['deleted'])
-				$conditions[0] = '(' . $conditions[0] . ') AND ' . self::COLUMN_DELETED_AT . ' != NULL';
+				$builder->andWhere(self::COLUMN_DELETED_AT . ' != NULL');
 			else
-				$conditions[] = '(' . $conditions[0] . ') AND ' . self::COLUMN_DELETED_AT . ' = NULL';
+				$builder->andWhere(self::COLUMN_DELETED_AT . ' = NULL');
 
 			unset($conditions['deleted']);
 
@@ -314,6 +317,15 @@ class Model {
 	private static function getTableName() {
 
 		return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
+	}
+
+	/**
+	 * @return string
+	 */
+
+	public function getSourceName() {
+
+		return self::getTableName();
 	}
 
 }

@@ -525,5 +525,6 @@ class PDO extends Adapter {
 	public function execute($query, $fetchMode = \PDO::FETCH_ASSOC) {
 
 		return $this->connection->query($query, $fetchMode);
+
 	}
 }
