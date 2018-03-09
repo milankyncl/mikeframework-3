@@ -6,6 +6,7 @@ namespace Postmix\Structure\Mvc;
 
 use Postmix\Application;
 use Postmix\Database\AdapterInterface;
+use Postmix\Exception\Database\MissingColumnException;
 use Postmix\Exception\Database\MissingPrimaryKeyException;
 use Postmix\Exception\Model\UnexpectedConditionException;
 
@@ -14,6 +15,12 @@ class Model {
 	private static $sourceTableName;
 
 	private static $connection;
+
+	const COLUMN_CREATED_AT = 'created_at';
+
+	const COLUMN_UPDATED_AT = 'updated_at';
+
+	const COLUMN_DELETED_AT = 'deleted_at';
 
 	/**
 	 * Model constructor.
@@ -64,6 +71,21 @@ class Model {
 
 		$resultSet = [];
 
+		/**
+		 * Recognize deleted by DELETED_AT column
+		 */
+
+		if(isset($conditions['deleted']) && $conditions['deleted'])
+			$conditions[] =  self::COLUMN_DELETED_AT . ' != NULL';
+		else
+			$conditions[] = self::COLUMN_DELETED_AT . ' = NULL';
+
+		unset($conditions['deleted']);
+
+		/**
+		 * Select records
+		 */
+
 		foreach($connection->select(self::getTableName(), $conditions) as $item) {
 
 			$modelClass = get_called_class();
@@ -90,12 +112,37 @@ class Model {
 
 		$connection = self::getConnection();
 
-		$result = null;
+		$result = false;
+
+		$query = '';
+
+		if(isset($conditions[0])) {
+
+			/**
+			 * Recognize deleted by DELETED_AT column
+			 */
+
+			if(isset($conditions['deleted']) && $conditions['deleted'])
+				$conditions[0] = '(' . $conditions[0] . ') AND ' . self::COLUMN_DELETED_AT . ' != NULL';
+			else
+				$conditions[] = '(' . $conditions[0] . ') AND ' . self::COLUMN_DELETED_AT . ' = NULL';
+
+			unset($conditions['deleted']);
+
+		}
+
+		/**
+		 * Limiting is not allowed here
+		 */
 
 		if(isset($conditions['limit']))
 			throw new UnexpectedConditionException('`limit` condition can\'t be set when fetching one record.');
 
 		$conditions['limit'] = 1;
+
+		/**
+		 * Select record
+		 */
 
 		$fetchedData = $connection->select(self::getTableName(), $conditions);
 
@@ -150,6 +197,17 @@ class Model {
 			}
 		}
 
+		/**
+		 * DateTime columns
+		 */
+
+		if(isset($columns[self::COLUMN_UPDATED_AT]))
+			$values[self::COLUMN_UPDATED_AT] = date('Y-m-d H:i:s');
+
+		/**
+		 * Save record
+		 */
+
 		if($primary != false && isset($this->{$primary})) {
 
 			/**
@@ -163,6 +221,9 @@ class Model {
 
 		} else {
 
+			if(isset($columns[self::COLUMN_CREATED_AT]))
+				$values[self::COLUMN_CREATED_AT] = date('Y-m-d H:i:s');
+
 			/**
 			 * Create new if primary field doesn't exist
 			 */
@@ -174,28 +235,45 @@ class Model {
 		return true;
 	}
 
-	public function delete() {
+	public function delete($permanently = false) {
 
 		$connection = self::getConnection();
 
 		$columns = $connection->getTableColumns(self::getTableName());
 
-		foreach($columns as $field => $column) {
+		if(!$permanently) {
 
-			if($column['primary'])
-				$primary = $field;
+			if(!isset($columns[self::COLUMN_DELETED_AT]))
+				throw new MissingColumnException('Column `' . self::COLUMN_DELETED_AT . '` is missing for impermanent removing records.');
+
+			/**
+			 * Set column DELETED_AT to actual DateTime and save it
+			 */
+
+			$this->{self::COLUMN_DELETED_AT} = date('Y-m-d H:i:s');
+
+			return $this->save();
+
+		} else {
+
+			foreach($columns as $field => $column) {
+
+				if($column['primary'])
+					$primary = $field;
+
+			}
+
+			if($primary != false && isset($this->{$primary})) {
+
+				if(!$connection->delete(self::getTableName(), [
+					$primary => $this->{$primary}
+				]))
+					return false;
+
+			} else
+				throw new MissingPrimaryKeyException('Can\'t delete model when primary key is missing in model.');
 
 		}
-
-		if($primary != false && isset($this->{$primary})) {
-
-			if(!$connection->delete(self::getTableName(), [
-				$primary => $this->{$primary}
-			]))
-				return false;
-
-		} else
-			throw new MissingPrimaryKeyException('Can\'t delete model when primary key is missing in model.');
 
 		return true;
 	}

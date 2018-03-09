@@ -3,7 +3,7 @@
 namespace Postmix;
 
 use Dotenv\Dotenv;
-use Postmix\Database\Adapter;
+use Postmix\Database\Adapter\PDO;
 use Postmix\Core\Autoloader;
 use Postmix\Core\Debugger;
 use Postmix\Exception\NoRouteFoundException;
@@ -143,28 +143,18 @@ class Startup {
 
 		if(isset($this->configuration['database'])) {
 
+			$injector->add(function() {
 
-			if(!isset($this->configuration['database']['adapter']))
-				throw new Exception('Database adapter must be specified.');
+				$adapter = new PDO(
+					$this->configuration['database']['connection']['database'],
+					$this->configuration['database']['connection']['host'],
+					$this->configuration['database']['connection']['user'],
+					$this->configuration['database']['connection']['password']
+				);
 
-			if(!is_null(Adapter::ADAPTERS[$this->configuration['database']['adapter']])) {
+				return $adapter;
 
-				$injector->add(function() {
-
-					$adapterClass = Adapter::ADAPTERS[$this->configuration['database']['adapter']];
-
-					$adapter = new $adapterClass(
-						$this->configuration['database']['connection']['database'],
-						$this->configuration['database']['connection']['host'],
-						$this->configuration['database']['connection']['user'],
-						$this->configuration['database']['connection']['password']
-					);
-
-					return $adapter;
-
-				}, 'database');
-
-			}
+			}, 'database');
 		}
 
 		/**

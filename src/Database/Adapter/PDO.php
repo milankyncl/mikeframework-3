@@ -6,14 +6,15 @@ use Postmix\Database\Adapter;
 use Postmix\Exception\Database\UnknownTableException;
 use Postmix\Exception\Database\MissingColumnValueException;
 use Postmix\Exception\Database\UnknownColumnException;
+use Postmix\Exception\Model\UnexpectedConditionException;
 
 /**
- * Class MySQL
+ * Class PDO
  *
  * @package Postmix\Core\Database\Adapter
  */
 
-class MySQL extends Adapter {
+class PDO extends Adapter {
 
 	private $tableColumns = [];
 
@@ -26,9 +27,9 @@ class MySQL extends Adapter {
 	 * @param string $password
 	 */
 
-	public function __construct($database, $host = '127.0.0.1', $username = 'root', $password = null) {
+	public function __construct($database, $host = '127.0.0.1', $username = 'root', $password = null, $charset = 'utf8') {
 
-		$connection = new \PDO('mysql:dbname=' . $database . ';host=' . $host, $username, $password);
+		$connection = new \PDO('mysql:dbname=' . $database . ';host=' . $host . ';charset=' . $charset, $username, $password);
 
 		$connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
@@ -118,6 +119,7 @@ class MySQL extends Adapter {
 
 		$statement = 'UPDATE `' . $tableName . '`';
 
+		$setSet = false;
 		$values = [];
 		$i = 1;
 
@@ -127,7 +129,16 @@ class MySQL extends Adapter {
 
 		foreach($data as $field => $value) {
 
-			$statement .= ' SET `' . $field . '` = ?';
+			if(!$setSet) {
+
+				$statement .= ' SET';
+				$setSet = true;
+			}
+
+			$statement .= ' `' . $field . '` = ?';
+
+			if($i != count($data))
+				$statement .= ',';
 
 			$values[$i] = $value;
 
@@ -183,6 +194,7 @@ class MySQL extends Adapter {
 
 	public function select($tableName, array $conditions = [], $columns = '*') {
 
+
 		$this->describeTable($tableName);
 
 		// Create select query statement
@@ -196,20 +208,39 @@ class MySQL extends Adapter {
 
 		foreach($conditions as $criterium => $condition) {
 
-			if(!in_array($criterium, [ 'order', 'limit' ])) {
+			if(!is_scalar($condition))
+				throw new UnexpectedConditionException('Condition `' . $criterium . '` is not scalar.');
 
-				if(!$whereSet) {
+			if(!$whereSet) {
 
-					$statement .= ' WHERE';
-					$whereSet = true;
+				$statement .= ' WHERE';
+				$whereSet = true;
+			}
+
+			if(is_scalar($criterium)) {
+
+				if(!in_array($criterium, [ 'order', 'limit', 'bind' ])) {
+
+					$statement .= ' `' . $criterium . '` = ?';
+
+					$parameters[$i] = $condition;
+
+					$i++;
 				}
 
-				$statement .= ' `' . $criterium . '` = ?';
+			} else {
 
-				$parameters[$i] = $condition;
+				/**
+				 * String conditions
+				 */
 
-				$i++;
+				$statement .= ' ' . $condition;
+
 			}
+		}
+
+		if(isset($conditions['order'])) {
+
 		}
 
 		if(isset($conditions['order'])) {
