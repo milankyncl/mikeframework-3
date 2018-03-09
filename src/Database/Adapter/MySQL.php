@@ -44,7 +44,7 @@ class MySQL extends Adapter {
 	 * @param string $tableName
 	 * @param array $conditions
 	 *
-	 * @return \PDOStatement
+	 * @return \PDOStatement|bool
 	 * @throws UnknownTableException
 	 */
 
@@ -87,7 +87,9 @@ class MySQL extends Adapter {
 		 */
 
 		$query = $this->prepareQuery($statement, $parameters);
-		$query->execute();
+
+		if(!$query->execute())
+			return false;
 
 		return $query;
 	}
@@ -101,7 +103,7 @@ class MySQL extends Adapter {
 	 * @param array $data
 	 * @param array $conditions
 	 *
-	 * @return \PDOStatement
+	 * @return \PDOStatement|bool
 	 * @throws UnknownTableException
 	 */
 
@@ -159,7 +161,9 @@ class MySQL extends Adapter {
 		 */
 
 		$query = $this->prepareQuery($statement, $values);
-		$query->execute();
+
+		if(!$query->execute())
+			return false;
 
 		return $query;
 	}
@@ -173,7 +177,7 @@ class MySQL extends Adapter {
 	 * @param $conditions
 	 * @param string $columns
 	 *
-	 * @return array
+	 * @return array|bool
 	 * @throws UnknownTableException
 	 */
 
@@ -223,7 +227,9 @@ class MySQL extends Adapter {
 		 */
 
 		$query =  $this->prepareQuery($statement, $parameters);
-		$query->execute();
+
+		if(!$query->execute())
+			return false;
 
 		return $query->fetchAll();
 	}
@@ -236,7 +242,7 @@ class MySQL extends Adapter {
 	 * @param $tableName string - Table name
 	 * @param $data array - Data array
 	 *
-	 * @return int
+	 * @return int|bool
 	 */
 
 	public function insert($tableName, array $data) {
@@ -280,7 +286,10 @@ class MySQL extends Adapter {
 		 * Create query and execute the INSERT statement
 		 */
 
-		$this->prepareQuery($statement, $values)->execute();
+		$query = $this->prepareQuery($statement, $values);
+
+		if(!$query->execute())
+			return false;
 
 		return $this->connection->lastInsertId();
 	}
@@ -405,7 +414,6 @@ class MySQL extends Adapter {
 
 	public function getTableColumns($tableName) {
 
-		// TODO: Resolve situtation logic
 		// Is this really indeed?
 		// Tables should be described when fetching datas, or reaching them before, but whatever
 		$this->describeTable($tableName);

@@ -6,6 +6,7 @@ namespace Postmix\Structure\Mvc;
 
 use Postmix\Application;
 use Postmix\Database\AdapterInterface;
+use Postmix\Exception\Database\MissingPrimaryKeyException;
 use Postmix\Exception\Model\UnexpectedConditionException;
 
 class Model {
@@ -111,6 +112,16 @@ class Model {
 		return $result;
 	}
 
+	/**
+	 * Save
+	 * ----
+	 *
+	 * Save model state and date
+	 *
+	 * @return bool
+	 * @throws \Postmix\Exception
+	 */
+
 	public function save() {
 
 		$connection = self::getConnection();
@@ -145,9 +156,10 @@ class Model {
 			 * Update existing record
 			 */
 
-			$connection->update(self::getTableName(), $values, [
+			if($connection->update(self::getTableName(), $values, [
 				$primary => $this->{$primary}
-			]);
+			]))
+				return false;
 
 		} else {
 
@@ -155,8 +167,35 @@ class Model {
 			 * Create new if primary field doesn't exist
 			 */
 
-			$connection->insert(self::getTableName(), $values);
+			if(!$connection->insert(self::getTableName(), $values))
+				return false;
 		}
+
+		return true;
+	}
+
+	public function delete() {
+
+		$connection = self::getConnection();
+
+		$columns = $connection->getTableColumns(self::getTableName());
+
+		foreach($columns as $field => $column) {
+
+			if($column['primary'])
+				$primary = $field;
+
+		}
+
+		if($primary != false && isset($this->{$primary})) {
+
+			if(!$connection->delete(self::getTableName(), [
+				$primary => $this->{$primary}
+			]))
+				return false;
+
+		} else
+			throw new MissingPrimaryKeyException('Can\'t delete model when primary key is missing in model.');
 
 		return true;
 	}

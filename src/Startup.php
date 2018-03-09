@@ -283,7 +283,6 @@ class Startup {
 
 			} catch(\Exception $exception) {
 
-				// TODO: Přesměování na předem nastavenou 500 stránku
 				// TODO: Zalogování chyby
 
 				$this->injector->router->setAction('uncaughtException');
