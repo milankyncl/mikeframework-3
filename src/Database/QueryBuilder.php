@@ -31,12 +31,12 @@ class QueryBuilder {
 	 *
 	 * Set query source
 	 *
-	 * @param $source
+	 * @param $source string
 	 *
 	 * @throws InvalidArgumentException
 	 */
 
-	public function from($source) {
+	public function from(string $source) {
 
 		if(class_exists($source)) {
 
@@ -64,9 +64,27 @@ class QueryBuilder {
 	}
 
 	/**
+	 * Pick columns
+	 * ------------
+	 *
+	 * Set columns for query
+	 *
+	 * @param string $columns
+	 *
+	 * @return self
+	 */
+
+	public function columns(string $columns) {
+
+		$this->columns = $columns;
+
+		return $this;
+	}
+
+	/**
 	 * @param $condition
 	 *
-	 * @return $this
+	 * @return self
 	 */
 
 	public function where($condition) {
@@ -77,6 +95,11 @@ class QueryBuilder {
 		$this->conditions .= $condition;
 
 		return $this;
+	}
+
+	public function andWhere($condition) {
+
+
 	}
 
 }

@@ -125,14 +125,15 @@ class Model {
 			 * Recognize deleted by DELETED_AT column
 			 */
 
-			if(isset($conditions['deleted']) && $conditions['deleted'])
-				$builder->andWhere(self::COLUMN_DELETED_AT . ' != NULL');
-			else
-				$builder->andWhere(self::COLUMN_DELETED_AT . ' = NULL');
-
-			unset($conditions['deleted']);
 
 		}
+
+		if(isset($conditions['deleted']) && $conditions['deleted'])
+			$builder->andWhere(self::COLUMN_DELETED_AT . ' != NULL');
+		else
+			$builder->andWhere(self::COLUMN_DELETED_AT . ' = NULL');
+
+		unset($conditions['deleted']);
 
 		/**
 		 * Limiting is not allowed here

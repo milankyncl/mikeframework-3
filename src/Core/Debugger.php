@@ -350,6 +350,7 @@ class Debugger {
                         <span class="ver">v<?= Info::FRAMEWORK_VERSION ?></span>
                     </div>
                     <div class="tab" id="tab-backtrace" style="display: block;">
+                        <?php /*
                         <div class="fileinfo">
                             <span>#1</span>
                             <?= $exception->getFile() . ' (' . $exception->getLine() . ')' ?>
@@ -384,11 +385,13 @@ class Debugger {
                         <script>codeScroll(1, <?= $exception->getLine() ?>)</script>
                         <?php
 
+                        */
+
                         foreach($exception->getTrace() as $k => $trace_item) {
 
                             if(isset($trace_item['file'])):
 
-                            $k = $k + 2;
+                            $k = $k + 1;
 
                             ?>
                             <div class="fileinfo">

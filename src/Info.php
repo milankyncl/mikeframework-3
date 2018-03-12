@@ -6,6 +6,6 @@ namespace Postmix;
 
 class Info {
 
-	const FRAMEWORK_VERSION = '0.1.0a';
+	const FRAMEWORK_VERSION = '0.2.1a';
 
 }
