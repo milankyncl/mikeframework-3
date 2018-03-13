@@ -125,10 +125,16 @@ class Model {
 
 		$builder = new QueryBuilder($conditions);
 
-		if(isset($conditions['deleted']) && $conditions['deleted'])
-			$builder->andWhere(self::COLUMN_DELETED_AT . ' != NULL');
-		else
-			$builder->andWhere(self::COLUMN_DELETED_AT . ' = NULL');
+		$columns = $connection->getTableColumns(self::getTableName());
+
+		if(isset($columns[self::COLUMN_DELETED_AT])) {
+
+			if(isset($conditions['deleted']) && $conditions['deleted'])
+				$builder->andWhere(self::COLUMN_DELETED_AT . ' IS NOT NULL');
+			else
+				$builder->andWhere(self::COLUMN_DELETED_AT . ' IS NULL');
+
+		}
 
 		/**
 		 * Limiting is not allowed here
@@ -163,11 +169,11 @@ class Model {
 
 			$model = new $modelClass($fetchedData[0]);
 
-			$result = $model;
+			return $model;
 
 		}
 
-		return $result;
+		return false;
 	}
 
 	/**
@@ -324,9 +330,7 @@ class Model {
 
 	private static function getTableName() {
 
-		//return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
-
-		return isset(self::$sourceTableName) ? self::$sourceTableName : str_replace("\\", '_', get_called_class());
+		return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
 	}
 
 	/**
