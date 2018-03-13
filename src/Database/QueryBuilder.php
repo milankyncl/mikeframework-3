@@ -150,11 +150,16 @@ class QueryBuilder {
 
 	}
 
+	/**
+	 * Get Query
+	 *
+	 * @return string
+	 */
 
 	public function getQuery() {
 
-		return 'SELECT ' . $this->columns . ' FROM ' .
-		       $this->source . ' WHERE ' .
-		       $this->conditions;
+		return 'SELECT ' . $this->columns .
+		       ' FROM ' . $this->source .
+		       ' WHERE ' . $this->conditions;
 	}
 }
