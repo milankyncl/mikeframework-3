@@ -23,6 +23,21 @@ class QueryBuilder {
 
 	public function __construct($parameters = []) {
 
+		if(isset($parameters['from']))
+			$this->from($parameters['from']);
+
+		if(isset($parameters['columns']))
+			$this->columns($parameters['columns']);
+
+		if(isset($parameters['conditions']) && is_array($parameters['conditions'])) {
+
+			foreach($parameters['conditions'] as $condition) {
+
+				$this->where($condition);
+			}
+
+		}
+
 	}
 
 	/**
@@ -36,7 +51,7 @@ class QueryBuilder {
 	 * @throws InvalidArgumentException
 	 */
 
-	public function from(string $source) {
+	public function from($source) {
 
 		if(class_exists($source)) {
 
@@ -74,7 +89,7 @@ class QueryBuilder {
 	 * @return self
 	 */
 
-	public function columns(string $columns) {
+	public function columns($columns) {
 
 		$this->columns = $columns;
 
@@ -82,6 +97,8 @@ class QueryBuilder {
 	}
 
 	/**
+	 * Where
+	 *
 	 * @param $condition
 	 *
 	 * @return self
@@ -97,9 +114,47 @@ class QueryBuilder {
 		return $this;
 	}
 
+	/**
+	 * And Where
+	 *
+	 * @param $condition
+	 *
+	 * @return QueryBuilder
+	 */
+
 	public function andWhere($condition) {
 
+		if(isset($this->conditions))
+			$this->conditions = '(' . $this->conditions . ')';
+
+		return $this->where($condition);
 
 	}
 
+	/**
+	 * Or Where
+	 *
+	 * @param $condition
+	 *
+	 * @return QueryBuilder
+	 */
+
+	public function orWhere($condition) {
+
+		if(isset($this->conditions))
+			$this->conditions = '(' . $this->conditions . ') OR ';
+
+		$this->conditions .= $condition;
+
+		return $this;
+
+	}
+
+
+	public function getQuery() {
+
+		return 'SELECT ' . $this->columns . ' FROM ' .
+		       $this->source . ' WHERE ' .
+		       $this->conditions;
+	}
 }

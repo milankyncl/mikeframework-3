@@ -2,7 +2,7 @@
 
 namespace Postmix\Structure\Mvc;
 
-use Postmix\Database\Adapter\MySQL;
+use Postmix\Database\Adapter\PDO;
 use Postmix\Injector\Service;
 
 /**
@@ -10,7 +10,7 @@ use Postmix\Injector\Service;
  *
  * @package Postmix\Structure\Mvc
  *
- * @property MySQL $database
+ * @property PDO $database
  */
 
 class Controller extends Service {

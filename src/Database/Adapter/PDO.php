@@ -497,7 +497,7 @@ class PDO extends Adapter {
 	 * @return \PDOStatement
 	 */
 
-	private function prepareQuery($statement, $values = []) {
+	public function prepareQuery($statement, $values = []) {
 
 		$query = $this->connection->prepare($statement);
 
