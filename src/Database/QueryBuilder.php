@@ -15,6 +15,10 @@ class QueryBuilder {
 
 	private $conditions;
 
+	private $limit;
+
+	private $order;
+
 	/**
 	 * QueryBuilder constructor.
 	 *
@@ -150,6 +154,11 @@ class QueryBuilder {
 
 	}
 
+	public function limit($limit, $offset = 0) {
+
+		$this->limit = $limit;
+	}
+
 	/**
 	 * Get Query
 	 *
@@ -160,6 +169,7 @@ class QueryBuilder {
 
 		return 'SELECT ' . $this->columns .
 		       ' FROM ' . $this->source .
-		       ' WHERE ' . $this->conditions;
+		       ' WHERE ' . $this->conditions .
+		       (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
 	}
 }

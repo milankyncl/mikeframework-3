@@ -5,6 +5,7 @@ namespace Postmix\Structure\Mvc;
 
 
 use Postmix\Application;
+use Postmix\Database\Adapter\PDO;
 use Postmix\Database\AdapterInterface;
 use Postmix\Database\QueryBuilder;
 use Postmix\Exception\Database\MissingColumnException;
@@ -117,23 +118,17 @@ class Model {
 		 * Create query builder
 		 */
 
+		if(isset($conditions[0]))
+			$conditions['conditions'] = $conditions[0];
+
+		$conditions['from'] = self::getTableName();
+
 		$builder = new QueryBuilder($conditions);
-
-		if(isset($conditions[0])) {
-
-			/**
-			 * Recognize deleted by DELETED_AT column
-			 */
-
-
-		}
 
 		if(isset($conditions['deleted']) && $conditions['deleted'])
 			$builder->andWhere(self::COLUMN_DELETED_AT . ' != NULL');
 		else
 			$builder->andWhere(self::COLUMN_DELETED_AT . ' = NULL');
-
-		unset($conditions['deleted']);
 
 		/**
 		 * Limiting is not allowed here
@@ -142,13 +137,25 @@ class Model {
 		if(isset($conditions['limit']))
 			throw new UnexpectedConditionException('`limit` condition can\'t be set when fetching one record.');
 
-		$conditions['limit'] = 1;
+		$builder->limit(1);
 
 		/**
 		 * Select record
 		 */
 
-		$fetchedData = $connection->select(self::getTableName(), $conditions);
+		$bindData = [];
+
+		if(isset($conditions['bind']))
+			$bindData = $conditions['bind'];
+
+		$query = $connection->prepareQuery($builder->getQuery(), $bindData);
+		$query->execute();
+
+		$fetchedData = $query->fetchAll();
+
+		/**
+		 * Return models if fetched data is not null
+		 */
 
 		if(!empty($fetchedData)) {
 
@@ -287,7 +294,7 @@ class Model {
 	 * --------------
 	 * Get database connection instance
 	 *
-	 * @return AdapterInterface
+	 * @return PDO
 	 *
 	 * @throws \Postmix\Exception
 	 */
@@ -317,7 +324,9 @@ class Model {
 
 	private static function getTableName() {
 
-		return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
+		//return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
+
+		return isset(self::$sourceTableName) ? self::$sourceTableName : str_replace("\\", '_', get_called_class());
 	}
 
 	/**
