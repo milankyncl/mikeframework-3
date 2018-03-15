@@ -5,9 +5,13 @@ namespace Postmix\Database;
 
 
 use Exception\InvalidArgumentException;
+use Postmix\Exception\Model\MissingSourceException;
+use Postmix\Exception\QueryBuilder\UnknownStatementTypeException;
 use Postmix\Structure\Mvc\Model;
 
 class QueryBuilder {
+
+	private $statement = self::STATEMENT_SELECT;
 
 	private $source;
 
@@ -167,9 +171,69 @@ class QueryBuilder {
 
 	public function getQuery() {
 
-		return 'SELECT ' . $this->columns .
-		       ' FROM ' . $this->source .
-		       ' WHERE ' . $this->conditions .
-		       (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
+		if(!isset($this->source))
+			throw new MissingSourceException('Data source for query is missing.');
+
+		switch($this->statement) {
+
+			/**
+			 * Select statement
+			 */
+
+			case self::STATEMENT_SELECT:
+
+				return 'SELECT ' . $this->columns .
+				       ' FROM `' . $this->source . '`' .
+				       ' WHERE ' . $this->conditions .
+				       (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
+
+				break;
+
+			/**
+			 * Insert statement
+			 */
+
+			case self::STATEMENT_INSERT:
+
+				return 'INSERT INTO `' . $this->source . '`';
+
+				break;
+
+			/**
+			 * Update statement
+			 */
+
+			case self::STATEMENT_UPDATE:
+
+				return 'UPDATE `' . $this->source . '`';
+
+				break;
+
+			/**
+			 * Delete statement
+			 */
+
+			case self::STATEMENT_DELETE:
+
+				return 'DELETE' .
+				       ' FROM `' . $this->source . '`' .
+				       ' WHERE ' . $this->conditions .
+				       (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
+
+				break;
+
+			default:
+
+				throw new UnknownStatementTypeException('Unkown statement type, use pre-defined constants instead.');
+		}
+
 	}
+
+	const STATEMENT_SELECT = 1;
+
+	const STATEMENT_INSERT = 2;
+
+	const STATEMENT_UPDATE = 3;
+
+	const STATEMENT_DELETE = 4;
 }
