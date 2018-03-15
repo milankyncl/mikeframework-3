@@ -37,6 +37,9 @@ class QueryBuilder {
 		if(isset($parameters['columns']))
 			$this->columns($parameters['columns']);
 
+		if(isset($parameters['order']))
+			$this->order($parameters['order']);
+
 		if(isset($parameters['conditions']) && is_array($parameters['conditions'])) {
 
 			foreach($parameters['conditions'] as $condition) {
@@ -163,6 +166,11 @@ class QueryBuilder {
 		$this->limit = $limit;
 	}
 
+	public function order($order) {
+
+		$this->order = $order;
+	}
+
 	/**
 	 * Get Query
 	 *
@@ -185,6 +193,7 @@ class QueryBuilder {
 				return 'SELECT ' . $this->columns .
 				       ' FROM `' . $this->source . '`' .
 				       ' WHERE ' . $this->conditions .
+				       (isset($this->order) ? ' ORDER BY ' . $this->order : '') .
 				       (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
 
 				break;

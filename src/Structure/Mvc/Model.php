@@ -71,6 +71,72 @@ class Model {
 
 		$connection = self::getConnection();
 
+		/**
+		 * Create query builder
+		 */
+
+		if(isset($conditions[0]))
+			$conditions['conditions'] = $conditions[0];
+
+		$conditions['from'] = self::getTableName();
+
+		$builder = new QueryBuilder($conditions);
+
+		$columns = $connection->getTableColumns(self::getTableName());
+
+		if(isset($columns[self::COLUMN_DELETED_AT])) {
+
+			if(isset($conditions['deleted']) && $conditions['deleted'])
+				$builder->andWhere(self::COLUMN_DELETED_AT . ' IS NOT NULL');
+			else
+				$builder->andWhere(self::COLUMN_DELETED_AT . ' IS NULL');
+
+		}
+
+		/**
+		 * Select records
+		 */
+
+		$bindData = [];
+
+		if(isset($conditions['bind']))
+			$bindData = $conditions['bind'];
+
+		$query = $connection->prepareQuery($builder->getQuery(), $bindData);
+		$query->execute();
+
+		$fetchedData = $query->fetchAll();
+
+		/**
+		 * Return models if fetched data is not null
+		 */
+
+		if(!empty($fetchedData)) {
+
+			$rows = [];
+			$modelClass = get_called_class();
+
+			foreach($fetchedData as $dataItem) {
+
+				$rows[] = new $modelClass($dataItem);
+			}
+
+			return $rows;
+
+		}
+
+		return false;
+
+
+
+
+
+
+
+
+
+		$connection = self::getConnection();
+
 		$resultSet = [];
 
 		/**
@@ -141,7 +207,7 @@ class Model {
 		 */
 
 		if(isset($conditions['limit']))
-			throw new UnexpectedConditionException('`limit` condition can\'t be set when fetching one record.');
+			throw new UnexpectedConditionException('Limit parameter for condition can\'t be set when fetching one record.');
 
 		$builder->limit(1);
 
