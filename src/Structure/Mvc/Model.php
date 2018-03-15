@@ -11,6 +11,7 @@ use Postmix\Database\QueryBuilder;
 use Postmix\Exception\Database\MissingColumnException;
 use Postmix\Exception\Database\MissingPrimaryKeyException;
 use Postmix\Exception\Model\UnexpectedConditionException;
+use Structure\Mvc\Model\Group;
 
 class Model {
 
@@ -63,7 +64,7 @@ class Model {
 	 *
 	 * @param array $conditions
 	 *
-	 * @return Model[]|null
+	 * @return Group|false
 	 * @throws \Postmix\Exception
 	 */
 
@@ -113,57 +114,19 @@ class Model {
 
 		if(!empty($fetchedData)) {
 
-			$rows = [];
+			$models = [];
 			$modelClass = get_called_class();
 
 			foreach($fetchedData as $dataItem) {
 
-				$rows[] = new $modelClass($dataItem);
+				$models[] = new $modelClass($dataItem);
 			}
 
-			return $rows;
+			return new Group($models);
 
 		}
 
 		return false;
-
-
-
-
-
-
-
-
-
-		$connection = self::getConnection();
-
-		$resultSet = [];
-
-		/**
-		 * Recognize deleted by DELETED_AT column
-		 */
-
-		if(isset($conditions['deleted']) && $conditions['deleted'])
-			$conditions[] =  self::COLUMN_DELETED_AT . ' != NULL';
-		else
-			$conditions[] = self::COLUMN_DELETED_AT . ' = NULL';
-
-		unset($conditions['deleted']);
-
-		/**
-		 * Select records
-		 */
-
-		foreach($connection->select(self::getTableName(), $conditions) as $item) {
-
-			$modelClass = get_called_class();
-
-			$model = new $modelClass($item);
-
-			$resultSet[] = $model;
-		}
-
-		return $resultSet;
 	}
 
 	/**
