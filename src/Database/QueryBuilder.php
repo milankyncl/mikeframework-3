@@ -274,8 +274,7 @@ class QueryBuilder {
 
 			case self::STATEMENT_DELETE:
 
-				return 'DELETE' .
-				       ' FROM `' . $this->source . '`' .
+				return 'DELETE FROM `' . $this->source . '`' .
 				       ' WHERE ' . $this->conditions .
 				       (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
 

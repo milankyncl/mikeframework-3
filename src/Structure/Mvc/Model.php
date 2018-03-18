@@ -329,9 +329,16 @@ class Model {
 
 			if($primary != false && isset($this->{$primary})) {
 
-				if(!$connection->delete(self::getTableName(), [
-					$primary => $this->{$primary}
-				]))
+				$builder = new QueryBuilder([
+					'source' => self::getTableName(),
+					'statement' => QueryBuilder::STATEMENT_DELETE
+				]);
+
+				$builder->where('id = ' . $this->{$primary});
+
+				$query = $connection->prepareQuery($builder->getQuery());
+
+				if(!$query->execute())
 					return false;
 
 			} else
