@@ -19,6 +19,8 @@ class PDO extends Adapter {
 
 	private $tableColumns = [];
 
+	private static $queries = [];
+
 	/**
 	 * MySQL PDO Adapter constructor.
 	 *
@@ -212,9 +214,7 @@ class PDO extends Adapter {
 
 	public function prepareQuery($statement, $values = []) {
 
-//		echo $statement;
-
-//		print_r($values);exit;
+		self::$queries[] = $statement;
 
 		$query = $this->connection->prepare($statement);
 
@@ -241,6 +241,8 @@ class PDO extends Adapter {
 
 	public function execute($query, $fetchMode = \PDO::FETCH_ASSOC) {
 
+		self::$queries[] = $query;
+
 		return $this->connection->query($query, $fetchMode);
 
 	}
@@ -248,5 +250,10 @@ class PDO extends Adapter {
 	public function getLastInsertId() {
 
 		return $this->connection->lastInsertId();
+	}
+
+	public static function getLastQueries() {
+
+		return self::$queries;
 	}
 }

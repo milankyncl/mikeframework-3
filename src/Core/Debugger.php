@@ -2,7 +2,7 @@
 
 namespace Postmix\Core;
 
-use Postmix\Info;
+use Postmix\Database\Adapter\PDO;use Postmix\Info;
 
 /**
  * Class Debugger
@@ -43,10 +43,17 @@ class Debugger {
 	    if(ob_get_level())
             ob_end_clean();
 
+	    $shortClassName = get_class($exception);
+
+	    if(strpos("\\", $shortClassName)) {
+
+		    $shortClassName = substr(strrchr($shortClassName, "\\"), 1);
+        }
+
 		?>
         <html>
         <head>
-            <title><?= substr(strrchr(get_class($exception), "\\"), 1) . ' - ' . $exception->getMessage() ?></title>
+            <title><?= $shortClassName . ' - ' . $exception->getMessage() ?></title>
             <style type="text/css">
 
                 html{
@@ -316,6 +323,24 @@ class Debugger {
                     display: block;
                     padding-left: 15px;
                 }
+
+                ol.queries {
+
+                    color: #999;
+                    font-size: 11px;
+                    line-height: 1.125;
+                }
+
+                ol.queries span {
+
+                    color: #444;
+                    font-size: 14px;
+                }
+
+                ol.queries li {
+
+                    margin-bottom: 10px;
+                }
             </style>
             <script>
                 function codeScroll(id, lineNum) {
@@ -335,7 +360,7 @@ class Debugger {
                     </h1>
 
                     <div class="header-footer">
-                        <!--a href="http://github.com/milankyncl/postmix-framework">Documentation</a-->
+                        <a href="http://github.com/milankyncl/postmix-framework">Documentation</a>
                         <h2><?= $exception->getFile() . ' (' . $exception->getLine() . ')' ?></h2>
                     </div>
                 </div>
@@ -451,6 +476,13 @@ class Debugger {
 
                     <div class="tab" id="tab-database">
                         <div class="tab-content">
+
+                            <ol class="queries">
+                            <?php foreach(PDO::getLastQueries() as $i => $query):?>
+                                <li><span><?= $query ?></span></li>
+                            <?php endforeach ?>
+                            </ol>
+
                         </div>
                     </div>
                 </div>

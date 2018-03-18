@@ -267,6 +267,10 @@ class Model {
 			 * Update existing record
 			 */
 
+			unset($values[$primary]);
+			unset($columns[$primary]);
+
+			$builder->columns($columns);
 			$builder->statement(QueryBuilder::STATEMENT_UPDATE);
 			$builder->where('id = ' . $this->{$primary});
 

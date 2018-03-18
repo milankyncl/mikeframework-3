@@ -254,7 +254,17 @@ class QueryBuilder {
 
 			case self::STATEMENT_UPDATE:
 
-				return 'UPDATE `' . $this->source . '`';
+				$query = 'UPDATE `' . $this->source . '` SET ';
+
+				$i = 0;
+				foreach($this->columns as $columnName => $column)
+					$query .= '`' . $columnName . '` = :' . $columnName . (++$i != count($this->columns) ? ', ' : '');
+
+				$query .= ' WHERE ' . $this->conditions .
+						  (isset($this->order) ? ' ORDER BY ' . $this->order : '') .
+						  (isset($this->limit) ? ' LIMIT ' . $this->limit : '');
+
+				return $query;
 
 				break;
 
