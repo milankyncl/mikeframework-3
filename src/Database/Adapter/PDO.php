@@ -212,6 +212,10 @@ class PDO extends Adapter {
 
 	public function prepareQuery($statement, $values = []) {
 
+//		echo $statement;
+
+//		print_r($values);exit;
+
 		$query = $this->connection->prepare($statement);
 
 		$query->setFetchMode(\PDO::FETCH_ASSOC);
@@ -239,5 +243,10 @@ class PDO extends Adapter {
 
 		return $this->connection->query($query, $fetchMode);
 
+	}
+
+	public function getLastInsertId() {
+
+		return $this->connection->lastInsertId();
 	}
 }

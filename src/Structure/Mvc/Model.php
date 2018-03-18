@@ -8,6 +8,7 @@ use Postmix\Application;
 use Postmix\Database\Adapter\PDO;
 use Postmix\Database\AdapterInterface;
 use Postmix\Database\QueryBuilder;
+use Postmix\Exception;
 use Postmix\Exception\Database\MissingColumnException;
 use Postmix\Exception\Database\MissingPrimaryKeyException;
 use Postmix\Exception\Model\UnexpectedConditionException;
@@ -239,6 +240,7 @@ class Model {
 
 			} else {
 
+				$values[$field] = NULL;
 				$primary = $field;
 			}
 		}
@@ -250,6 +252,11 @@ class Model {
 		if(isset($columns[self::COLUMN_UPDATED_AT]))
 			$values[self::COLUMN_UPDATED_AT] = date('Y-m-d H:i:s');
 
+		$builder = new QueryBuilder([
+			'columns' => $columns,
+			'source' => self::getTableName()
+		]);
+
 		/**
 		 * Save record
 		 */
@@ -260,9 +267,11 @@ class Model {
 			 * Update existing record
 			 */
 
-			if($connection->update(self::getTableName(), $values, [
-				$primary => $this->{$primary}
-			]))
+			$builder->statement(QueryBuilder::STATEMENT_UPDATE);
+			$builder->where('id = ' . $this->{$primary});
+
+			$query = $connection->prepareQuery($builder->getQuery(), $values);
+			if(!$query->execute())
 				return false;
 
 		} else {
@@ -274,8 +283,13 @@ class Model {
 			 * Create new if primary field doesn't exist
 			 */
 
-			if(!$connection->insert(self::getTableName(), $values))
+			$builder->statement(QueryBuilder::STATEMENT_INSERT);
+
+			$query = $connection->prepareQuery($builder->getQuery(), $values);
+			if(!$query->execute())
 				return false;
+
+			return $connection->getLastInsertId();
 		}
 
 		return true;
@@ -340,7 +354,7 @@ class Model {
 
 			$injector = Application::getStaticInjector();
 
-			/** @var AdapterInterface $connection */
+			/** @var PDO $connection */
 
 			self::$connection = $injector->get('database');
 
@@ -355,11 +369,15 @@ class Model {
 	 * Get source table name for database quering
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
 
 	private static function getTableName() {
 
-		return isset(self::$sourceTableName) ? self::$sourceTableName : substr(strrchr(get_called_class(), "\\"), 1);
+		if(get_called_class() == self::class)
+			throw new Exception('Can\'t perform operations with base model.');
+
+		return isset(self::$sourceTableName) ? self::$sourceTableName : strtolower(substr(strrchr(get_called_class(), "\\"), 1));
 	}
 
 	/**

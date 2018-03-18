@@ -15,6 +15,10 @@ class QueryBuilder {
 
 	private $source;
 
+	/**
+	 * @var string|array
+	 */
+
 	private $columns = '*';
 
 	private $conditions;
@@ -39,6 +43,12 @@ class QueryBuilder {
 
 		if(isset($parameters['order']))
 			$this->order($parameters['order']);
+
+		if(isset($parameters['statement']))
+			$this->statement($parameters['statement']);
+
+		if(isset($parameters['source']))
+			$this->table($parameters['source']);
 
 		if(isset($parameters['conditions']) && is_array($parameters['conditions'])) {
 
@@ -105,6 +115,22 @@ class QueryBuilder {
 		$this->columns = $columns;
 
 		return $this;
+	}
+
+	/**
+	 * Set statement type
+	 *
+	 * @param $statement
+	 */
+
+	public function statement($statement) {
+
+		$this->statement = $statement;
+	}
+
+	public function table($source) {
+
+		$this->source = $source;
 	}
 
 	/**
@@ -204,7 +230,21 @@ class QueryBuilder {
 
 			case self::STATEMENT_INSERT:
 
-				return 'INSERT INTO `' . $this->source . '`';
+				$query = 'INSERT INTO `' . $this->source . '` (';
+
+				$i = 0;
+				foreach($this->columns as $columnName => $column)
+					$query .= '`' . $columnName . '`' . (++$i != count($this->columns) ? ', ' : '');
+
+				$query .= ') VALUES (';
+
+				$i = 0;
+				foreach($this->columns as $columnName => $column)
+					$query .= ':' . $columnName . (++$i != count($this->columns) ? ', ' : '');
+
+				$query .= ')';
+
+				return $query;
 
 				break;
 
