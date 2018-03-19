@@ -40,11 +40,16 @@ class Injector {
 
 		$this->container[$name] = $class;
 
+		if($this->container[$name] instanceof Service)
+			$this->container[$name]->setInjector($this);
+
 		self::$staticContainer[$name] = $class;
 	}
 
 	/**
 	 * Get dependency from container
+	 *
+	 * @return mixed
 	 */
 
 	public function get($name) {
@@ -52,10 +57,15 @@ class Injector {
 		if(!isset($this->container[$name]))
 			throw new Exception('Dependency `' . $name . '` doesn\'t exist.');
 
-		if($this->container[$name] instanceof Service)
-			$this->container[$name]->setInjector($this);
+		$service = $this->container[$name];
 
-		return $this->container[$name];
+		if($service instanceof Service) {
+
+			$service->setInjector($this);
+			$service->afterInject();
+		}
+
+		return $service;
 	}
 
 	/**

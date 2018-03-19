@@ -5,10 +5,10 @@ namespace Postmix\Structure\Mvc;
 
 use Postmix\Exception;
 use Postmix\Exception\FileNotFoundException;
+use Postmix\Exception\View\ViewRenderException;
 use Postmix\Helper\LinkGenerator;
 use Postmix\Injector\Service;
-use Postmix\Helper\Html\Tag;
-use UI\Template;
+use Postmix\Structure\Configuration;
 
 /**
  * Class View
@@ -37,13 +37,15 @@ class View extends Service {
 
 	private $variables = [];
 
-	/** @var Template */
+	private $cacheDirectory;
 
-	private $template;
+	public function afterInject() {
 
-	public function __construct() {
+		/** @var Configuration $configuration */
 
-		$this->template = new Template();
+		$configuration = $this->getInjector()->get('configuration');
+
+		$this->cacheDirectory = $configuration->system->baseDirectory . $configuration->system->tempDirectory . '/cache';
 	}
 
 	/**
@@ -71,7 +73,7 @@ class View extends Service {
 		if(!isset($this->viewsDirectory) || !isset($this->layoutDirectory))
 			throw new Exception('View service\'s `viewsDirectory` and `layoutDirectory` must be set before rendering view.');
 
-		$layoutPath = $this->layoutDirectory . '/' . $this->layout . '.php';
+		$layoutPath = $this->layoutDirectory . '/' . $this->layout . '.twig';
 
 		if(!file_exists($layoutPath))
 			throw new FileNotFoundException('Layout `' . $this->layout .'` doesn\'t exist in `' . $this->layoutDirectory .'` path.');
@@ -80,23 +82,43 @@ class View extends Service {
 
 		ob_start();
 
-		require $layoutPath;
+		try {
 
-		$content = ob_get_contents();
+			$twig_loader = new \Twig_Loader_Filesystem($this->layoutDirectory . '/');
+
+			$twig_environment = new \Twig_Environment($twig_loader, [
+				'cache' => $this->cacheDirectory . '/layouts',
+				'debug' => true,
+				'autoescape' => false
+			]);
+
+			foreach($this->variables as $name => $value)
+				$twig_environment->addGlobal($name, $value);
+
+
+			$viewRenderer = clone($twig_environment);
+
+			$twig_environment->addFunction(new \Twig_SimpleFunction('content', function() use($viewRenderer) {
+
+				$viewRenderer->setLoader(new \Twig_Loader_Filesystem($this->viewsDirectory . '/'));
+
+				if(!file_exists($this->viewsDirectory . '/' . $this->view . '.twig'))
+					throw new FileNotFoundException('View `' . $this->view .'` doesn\'t exist in `' . $this->viewsDirectory .'` path.');
+
+				return $viewRenderer->render($this->view . '.twig');
+
+			}));
+
+			$content = $twig_environment->render($this->layout . '.twig');
+
+		} catch (\Twig_Error $e) {
+
+			throw new ViewRenderException($e->getMessage());
+		}
 
 		ob_end_clean();
 
 		return $content;
-	}
-
-	private function content() {
-
-		$viewPath = $this->viewsDirectory . '/' . $this->view . '.php';
-
-		if(!file_exists($viewPath))
-			throw new FileNotFoundException('View `' . $this->view .'` doesn\'t exist in `' . $this->viewsDirectory .'` path.');
-
-		require $viewPath;
 	}
 
 	/**

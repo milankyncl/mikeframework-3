@@ -52,9 +52,9 @@ class Startup {
 
 		$this->appDirectory = $appDirectory;
 
-		(new Dotenv($appDirectory . '/../'))->load();
+		(new Dotenv($appDirectory . '/..'))->load();
 
-		$this->baseDirectory = $appDirectory . '/../';
+		$this->baseDirectory = $appDirectory . '/..';
 
 		$this->loadConfigurations();
 
@@ -84,6 +84,7 @@ class Startup {
 
 				$fileInfo = pathinfo($this->appDirectory . '/config/' . $file);
 
+				// TODO: Config file types
 				// Accepts only .php files
 				if(strtolower($fileInfo['extension']) == 'php') {
 

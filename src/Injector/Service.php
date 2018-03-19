@@ -51,4 +51,13 @@ class Service {
 		return null;
 	}
 
+	/**
+	 * After inject method
+	 */
+
+	public function afterInject() {
+
+		// User methods
+	}
+
 }
