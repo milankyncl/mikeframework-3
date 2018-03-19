@@ -92,9 +92,7 @@ class View extends Service {
 				'autoescape' => false
 			]);
 
-			foreach($this->variables as $name => $value)
-				$twig_environment->addGlobal($name, $value);
-
+			$twig_environment = $this->_environmentConfiguration($twig_environment);
 
 			$viewRenderer = clone($twig_environment);
 
@@ -214,17 +212,29 @@ class View extends Service {
 	}
 
 	/**
-	 * --------------------------------
-	 * |        View functions        |
-	 * --------------------------------
+	 * Prepare TWIG Envrionment
+	 *
+	 * @param $environment \Twig_Environment
+	 *
+	 * @return mixed
 	 */
 
-	private function link($code) {
+	private function _environmentConfiguration(\Twig_Environment $environment) {
 
-		/** @var LinkGenerator $linkGenerator */
+		foreach($this->variables as $name => $value)
+			$environment->addGlobal($name, $value);
 
-		$linkGenerator = $this->injector->get('linkGenerator');
+		$environment->addFunction(new \Twig_SimpleFunction('link', function($code) {
 
-		return $linkGenerator->createFromCode($code);
+			/** @var LinkGenerator $linkGenerator */
+
+			$linkGenerator = $this->injector->get('linkGenerator');
+
+			return $linkGenerator->createFromCode($code);
+
+		}));
+
+		return $environment;
 	}
+
 }
